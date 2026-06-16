@@ -18,15 +18,24 @@ export function CraftTree({ tree, rootItemId, onToggleBuild, onPriceChange }: Pr
       title: "Предмет",
       dataIndex: "name",
       key: "name",
+      width: 360,
       render: (_, node) => (
         <Space2>
-          <Text strong={node.itemId === rootItemId}>{node.name}</Text>
+          <Text strong={node.itemId === rootItemId} style={{ whiteSpace: "nowrap" }}>
+            {node.name}
+          </Text>
           {node.mode === "build" ? (
-            <Tag color="blue">крафт ×{node.runs}</Tag>
+            <Tag color="blue" style={{ marginInlineEnd: 0 }}>
+              крафт ×{node.runs}
+            </Tag>
           ) : (
-            <Tag>купити</Tag>
+            <Tag style={{ marginInlineEnd: 0 }}>купити</Tag>
           )}
-          {!node.priceKnown && node.mode === "buy" && <Tag color="orange">ціна невідома</Tag>}
+          {!node.priceKnown && node.mode === "buy" && (
+            <Tag color="orange" style={{ marginInlineEnd: 0 }}>
+              ціна невідома
+            </Tag>
+          )}
         </Space2>
       ),
     },
@@ -123,6 +132,7 @@ export function CraftTree({ tree, rootItemId, onToggleBuild, onPriceChange }: Pr
       rowKey="key"
       pagination={false}
       size="small"
+      scroll={{ x: "max-content" }}
       defaultExpandedRowKeys={[tree.key]}
       expandable={{ childrenColumnName: "children" }}
     />

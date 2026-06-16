@@ -34,7 +34,7 @@ export default function App() {
             EVE Echoes — Калькулятор виробництва
           </Title>
         </Header>
-        <Content style={{ padding: 24, maxWidth: 1400, margin: "0 auto", width: "100%" }}>
+        <Content style={{ padding: 24, width: "100%" }}>
           {calc.loading && (
             <div style={{ textAlign: "center", padding: 80 }}>
               <Spin size="large" tip="Завантаження даних гри…">
