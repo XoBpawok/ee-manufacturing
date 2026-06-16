@@ -149,4 +149,16 @@ describe("capComponentCostReduction", () => {
     const tree = buildTree(capParams(0));
     expect(tree.children[0].jobCost).toBe(50 * 2);
   });
+
+  it("знижка 100% обнуляє jobCost capital-компонента", () => {
+    const tree = buildTree(capParams(100));
+    const comp = tree.children[0];
+    expect(comp.jobCost).toBe(0);
+    expect(comp.nodeTotal).toBe(comp.children[0].buyCost); // лишається тільки вартість мінералів
+  });
+
+  it("клампить значення поза діапазоном 0–100", () => {
+    expect(buildTree(capParams(-10)).children[0].jobCost).toBe(50 * 2); // <0 → 0% знижки
+    expect(buildTree(capParams(150)).children[0].jobCost).toBe(0); // >100 → 100% знижки
+  });
 });

@@ -23,7 +23,7 @@ export interface BuildNode {
   unitPrice: number; // ціна за одиницю (тільки buy)
   priceKnown: boolean; // чи відома ринкова ціна
   buyCost: number; // quantity × unitPrice (тільки buy)
-  jobCost: number; // manufactureCost × attempts (тільки build)
+  jobCost: number; // manufactureCost × attempts × costFactor (Capital Components зі знижкою) (тільки build)
   jobTime: number; // секунди, effectiveTime × attempts (тільки build)
   nodeTotal: number; // повна вартість піддерева
   children: BuildNode[];
