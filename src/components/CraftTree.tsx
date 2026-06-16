@@ -2,32 +2,41 @@ import { InputNumber, Switch, Table, Tag, Tooltip, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { BuildNode } from "../domain/tree";
 import { formatDuration, formatISK, formatQuantity } from "../domain/format";
+import { ItemIcon } from "./ItemIcon";
 
 const { Text } = Typography;
 
 interface Props {
   tree: BuildNode;
   rootItemId: number;
+  auto: boolean;
   onToggleBuild: (itemId: number) => void;
   onPriceChange: (itemId: number, price: number | null) => void;
 }
 
-export function CraftTree({ tree, rootItemId, onToggleBuild, onPriceChange }: Props) {
+export function CraftTree({ tree, rootItemId, auto, onToggleBuild, onPriceChange }: Props) {
   const columns: ColumnsType<BuildNode> = [
     {
       title: "Предмет",
       dataIndex: "name",
       key: "name",
-      width: 360,
+      width: 380,
       render: (_, node) => (
         <Space2>
+          <ItemIcon src={node.iconUrl} />
           <Text strong={node.itemId === rootItemId} style={{ whiteSpace: "nowrap" }}>
             {node.name}
           </Text>
           {node.mode === "build" ? (
-            <Tag color="blue" style={{ marginInlineEnd: 0 }}>
-              крафт ×{node.runs}
-            </Tag>
+            node.recipeKind === "reverse" ? (
+              <Tag color="purple" style={{ marginInlineEnd: 0 }}>
+                реверс ×{node.runs} (≈{node.attempts.toFixed(1)} спроб)
+              </Tag>
+            ) : (
+              <Tag color="blue" style={{ marginInlineEnd: 0 }}>
+                крафт ×{node.runs}
+              </Tag>
+            )
           ) : (
             <Tag style={{ marginInlineEnd: 0 }}>купити</Tag>
           )}
@@ -104,11 +113,13 @@ export function CraftTree({ tree, rootItemId, onToggleBuild, onPriceChange }: Pr
         return (
           <Tooltip
             title={
-              isRoot
-                ? "Кінцевий предмет завжди крафтиться"
-                : !node.craftable
-                  ? "Немає блюпрінта — лише купити"
-                  : "Перемкнути крафт / купити"
+              auto
+                ? "Вимкніть авто-оптимізацію для ручного вибору"
+                : isRoot
+                  ? "Кінцевий предмет завжди крафтиться"
+                  : !node.craftable
+                    ? "Немає рецепта — лише купити"
+                    : "Перемкнути крафт / купити"
             }
           >
             <Switch
@@ -116,7 +127,7 @@ export function CraftTree({ tree, rootItemId, onToggleBuild, onPriceChange }: Pr
               checkedChildren="крафт"
               unCheckedChildren="купити"
               checked={node.mode === "build"}
-              disabled={isRoot || !node.craftable}
+              disabled={auto || isRoot || !node.craftable}
               onChange={() => onToggleBuild(node.itemId)}
             />
           </Tooltip>

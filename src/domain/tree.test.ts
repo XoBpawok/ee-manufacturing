@@ -1,20 +1,20 @@
 import { describe, expect, it } from "vitest";
-import type { Blueprint, GameData, Skill } from "../api/types";
+import type { GameData, Recipe, Skill } from "../api/types";
 import { buildTree, summarizeTree, type TreeParams } from "./tree";
 
 // Дерево: Ship(1) ← 2× Component(2) ← 10× Mineral(3, не craftable)
-function makeData(): GameData {
+export function makeData(): GameData {
   const skillByName = new Map<string, Skill>([
     ["S", { name: "S", efficiency: [0, 0, 0, 0, 0], time: [0, 0, 0, 0, 0] }],
   ]);
-  const shipBp: Blueprint = {
-    itemId: 1, name: "Ship", categoryName: "Ship", groupName: "Dread",
-    outputNumber: 1, manufactureCost: 1000, manufactureTime: 100, skills: ["S"],
+  const shipBp: Recipe = {
+    itemId: 1, name: "Ship", categoryName: "Ship", groupName: "Dread", kind: "manufacture",
+    outputNumber: 1, manufactureCost: 1000, manufactureTime: 100, passRate: 1, skills: ["S"],
     materials: [{ id: 2, name: "Component", type: "Component", quantity: 2 }],
   };
-  const compBp: Blueprint = {
-    itemId: 2, name: "Component", categoryName: "Component", groupName: "Cap",
-    outputNumber: 1, manufactureCost: 50, manufactureTime: 10, skills: ["S"],
+  const compBp: Recipe = {
+    itemId: 2, name: "Component", categoryName: "Component", groupName: "Cap", kind: "manufacture",
+    outputNumber: 1, manufactureCost: 50, manufactureTime: 10, passRate: 1, skills: ["S"],
     materials: [{ id: 3, name: "Mineral", type: "Mineral", quantity: 10 }],
   };
   return {
@@ -22,8 +22,9 @@ function makeData(): GameData {
       { id: 1, name: "Ship", groupName: "Dread", categoryName: "Ship" },
       { id: 2, name: "Component", groupName: "Cap", categoryName: "Component" },
     ],
-    blueprintByItemId: new Map([[1, shipBp], [2, compBp]]),
+    recipeByItemId: new Map([[1, shipBp], [2, compBp]]),
     priceByItemId: new Map([[2, 500], [3, 5], [1, 99999]]),
+    iconByItemId: new Map(),
     skillByName,
     fetchedAt: 0,
   };

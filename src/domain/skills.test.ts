@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Blueprint, Skill } from "../api/types";
+import type { Recipe, Skill } from "../api/types";
 import {
   combineEfficiency,
   effectiveQuantity,
@@ -13,14 +13,16 @@ const skillByName = new Map<string, Skill>([
   ["B", { name: "B", efficiency: [3, 6, 9, 12, 15], time: [0, -0.05, -0.1, -0.15, -0.2] }],
 ]);
 
-const bp: Blueprint = {
+const bp: Recipe = {
   itemId: 1,
   name: "Test",
   categoryName: "Ship",
   groupName: "G",
+  kind: "manufacture",
   outputNumber: 1,
   manufactureCost: 1000,
   manufactureTime: 100,
+  passRate: 1,
   skills: ["A", "B"],
   materials: [{ id: 10, name: "Mineral", type: "Mineral", quantity: 100 }],
 };

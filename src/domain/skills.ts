@@ -1,4 +1,4 @@
-import type { Blueprint, Skill } from "../api/types";
+import type { Recipe, Skill } from "../api/types";
 
 export const MAX_SKILL_LEVEL = 5;
 
@@ -60,16 +60,27 @@ function maxLevels(skillNames: string[]): SkillLevels {
  */
 export function effectiveQuantity(
   baseQuantity: number,
-  blueprint: Blueprint,
+  recipe: Recipe,
   levels: SkillLevels,
   skillByName: Map<string, Skill>,
 ): number {
-  const effCur = combineEfficiency(blueprint.skills, levels, skillByName);
-  const effMax = combineEfficiency(blueprint.skills, maxLevels(blueprint.skills), skillByName);
+  return Math.ceil(baseQuantity * skillEfficiencyFactor(recipe, levels, skillByName));
+}
+
+/**
+ * Неперервний коефіцієнт масштабування кількості (без округлення).
+ * Потрібен оптимізатору для порівняння вартостей. На макс рівні = 1.
+ */
+export function skillEfficiencyFactor(
+  recipe: Recipe,
+  levels: SkillLevels,
+  skillByName: Map<string, Skill>,
+): number {
+  const effCur = combineEfficiency(recipe.skills, levels, skillByName);
+  const effMax = combineEfficiency(recipe.skills, maxLevels(recipe.skills), skillByName);
   const denom = 1 - effMax / 100;
-  if (denom <= 0) return Math.ceil(baseQuantity); // захист від ділення на ~0
-  const factor = (1 - effCur / 100) / denom;
-  return Math.ceil(baseQuantity * factor);
+  if (denom <= 0) return 1; // захист від ділення на ~0
+  return (1 - effCur / 100) / denom;
 }
 
 /**
@@ -77,12 +88,12 @@ export function effectiveQuantity(
  * Час у блюпрінті — для максимальних скілів, тому масштабуємо так само.
  */
 export function effectiveTime(
-  blueprint: Blueprint,
+  recipe: Recipe,
   levels: SkillLevels,
   skillByName: Map<string, Skill>,
 ): number {
-  const cur = combineTimeMultiplier(blueprint.skills, levels, skillByName);
-  const max = combineTimeMultiplier(blueprint.skills, maxLevels(blueprint.skills), skillByName);
-  if (max <= 0) return blueprint.manufactureTime;
-  return blueprint.manufactureTime * (cur / max);
+  const cur = combineTimeMultiplier(recipe.skills, levels, skillByName);
+  const max = combineTimeMultiplier(recipe.skills, maxLevels(recipe.skills), skillByName);
+  if (max <= 0) return recipe.manufactureTime;
+  return recipe.manufactureTime * (cur / max);
 }

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { loadGameData } from "../api/client";
 import type { GameData } from "../api/types";
 import { buildTree, summarizeTree, type BuildNode, type TreeSummary } from "../domain/tree";
+import { computeOptimalBuildSet } from "../domain/optimize";
 
 export const NAGLFAR_ITEM_ID = 10701000201;
 
@@ -29,6 +30,9 @@ export interface Calculator {
   buildSet: Set<number>;
   toggleBuild: (itemId: number) => void;
 
+  auto: boolean;
+  setAuto: (on: boolean) => void;
+
   priceOverrides: Map<number, number>;
   setPriceOverride: (itemId: number, price: number | null) => void;
 
@@ -46,7 +50,8 @@ export function useCalculator(): Calculator {
   const [rootItemId, setRootItemId] = useState(NAGLFAR_ITEM_ID);
   const [desiredQty, setDesiredQty] = useState(1);
   const [skillLevels, setSkillLevels] = useState<Map<string, number>>(new Map());
-  const [buildSet, setBuildSet] = useState<Set<number>>(new Set());
+  const [manualBuildSet, setManualBuildSet] = useState<Set<number>>(new Set());
+  const [auto, setAuto] = useState(false);
   const [priceOverrides, setPriceOverrides] = useState<Map<number, number>>(new Map());
 
   const doLoad = useCallback((force: boolean) => {
@@ -75,7 +80,7 @@ export function useCalculator(): Calculator {
   const resetSkills = useCallback(() => setSkillLevels(new Map()), []);
 
   const toggleBuild = useCallback((itemId: number) => {
-    setBuildSet((prev) => {
+    setManualBuildSet((prev) => {
       const next = new Set(prev);
       if (next.has(itemId)) next.delete(itemId);
       else next.add(itemId);
@@ -94,12 +99,20 @@ export function useCalculator(): Calculator {
 
   const handleSetRoot = useCallback((id: number) => {
     setRootItemId(id);
-    setBuildSet(new Set()); // скидаємо розкриття при зміні предмета
+    setManualBuildSet(new Set()); // скидаємо розкриття при зміні предмета
     setPriceOverrides(new Map());
   }, []);
 
+  // Коли увімкнено авто — buildSet обчислюється оптимізатором (найдешевше
+  // джерело для кожного предмета); інакше використовується ручний набір.
+  const buildSet = useMemo(() => {
+    if (!data || !data.recipeByItemId.has(rootItemId)) return manualBuildSet;
+    if (!auto) return manualBuildSet;
+    return computeOptimalBuildSet({ data, rootItemId, levels: skillLevels, priceOverrides });
+  }, [data, auto, rootItemId, skillLevels, priceOverrides, manualBuildSet]);
+
   const { tree, summary } = useMemo(() => {
-    if (!data || !data.blueprintByItemId.has(rootItemId)) {
+    if (!data || !data.recipeByItemId.has(rootItemId)) {
       return { tree: null, summary: null };
     }
     const params = { data, rootItemId, desiredQty, levels: skillLevels, buildSet, priceOverrides };
@@ -121,6 +134,8 @@ export function useCalculator(): Calculator {
     resetSkills,
     buildSet,
     toggleBuild,
+    auto,
+    setAuto,
     priceOverrides,
     setPriceOverride,
     tree,

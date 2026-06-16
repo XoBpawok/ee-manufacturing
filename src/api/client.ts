@@ -1,8 +1,8 @@
-import type { Blueprint, CraftableItem, GameData, Skill } from "./types";
+import type { CraftableItem, GameData, Recipe, RecipeKind, Skill } from "./types";
 
 const BASE = "https://echoes.mobi/api";
 
-const CACHE_KEY = "ec-manufacturing:gamedata:v2";
+const CACHE_KEY = "ec-manufacturing:gamedata:v3";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 години
 
 // ---- Сирі форми відповідей API (поля приходять рядками) ----
@@ -14,7 +14,7 @@ interface RawMaterial {
   quantity: number;
 }
 
-interface RawBlueprint {
+interface RawRecipe {
   item_id: string;
   name: string;
   category_name: string;
@@ -22,6 +22,7 @@ interface RawBlueprint {
   output_number: string;
   manufacture_cost: string;
   manufacture_time: string;
+  pass_rate?: number;
   skills: string;
   materials: RawMaterial[];
 }
@@ -29,6 +30,7 @@ interface RawBlueprint {
 interface RawPrice {
   id: string;
   estimated_price: string | null;
+  icon_id: string | null;
 }
 
 interface RawSkill {
@@ -54,46 +56,57 @@ function parseNumberList(s: string): number[] {
     .filter((x) => !Number.isNaN(x));
 }
 
+function toRecipe(r: RawRecipe, kind: RecipeKind): Recipe {
+  return {
+    itemId: Number(r.item_id),
+    name: r.name,
+    categoryName: r.category_name,
+    groupName: r.group_name,
+    kind,
+    outputNumber: Number(r.output_number) || 1,
+    manufactureCost: Number(r.manufacture_cost) || 0,
+    manufactureTime: Number(r.manufacture_time) || 0,
+    passRate: kind === "reverse" ? Number(r.pass_rate) || 1 : 1,
+    skills: r.skills ? r.skills.split(",").map((s) => s.trim()).filter(Boolean) : [],
+    materials: (r.materials ?? []).map((m) => ({
+      id: Number(m.id),
+      name: m.name,
+      type: m.type,
+      quantity: Number(m.quantity),
+    })),
+  };
+}
+
 function normalize(
-  rawBlueprints: RawBlueprint[],
+  rawBlueprints: RawRecipe[],
+  rawReverse: RawRecipe[],
   rawPrices: RawPrice[],
   rawSkills: RawSkill[],
 ): GameData {
-  const blueprintByItemId = new Map<number, Blueprint>();
+  const recipeByItemId = new Map<number, Recipe>();
   const craftables: CraftableItem[] = [];
-  for (const r of rawBlueprints) {
-    const itemId = Number(r.item_id);
-    const bp: Blueprint = {
-      itemId,
-      name: r.name,
-      categoryName: r.category_name,
-      groupName: r.group_name,
-      outputNumber: Number(r.output_number) || 1,
-      manufactureCost: Number(r.manufacture_cost) || 0,
-      manufactureTime: Number(r.manufacture_time) || 0,
-      skills: r.skills ? r.skills.split(",").map((s) => s.trim()).filter(Boolean) : [],
-      materials: (r.materials ?? []).map((m) => ({
-        id: Number(m.id),
-        name: m.name,
-        type: m.type,
-        quantity: Number(m.quantity),
-      })),
-    };
-    blueprintByItemId.set(itemId, bp);
+  const addRecipe = (r: RawRecipe, kind: RecipeKind) => {
+    const recipe = toRecipe(r, kind);
+    // Множини рецептів не перетинаються; на випадок дубля — не перезаписуємо.
+    if (recipeByItemId.has(recipe.itemId)) return;
+    recipeByItemId.set(recipe.itemId, recipe);
     craftables.push({
-      id: itemId,
-      name: bp.name,
-      groupName: bp.groupName,
-      categoryName: bp.categoryName,
+      id: recipe.itemId,
+      name: recipe.name,
+      groupName: recipe.groupName,
+      categoryName: recipe.categoryName,
     });
-  }
+  };
+  rawBlueprints.forEach((r) => addRecipe(r, "manufacture"));
+  rawReverse.forEach((r) => addRecipe(r, "reverse"));
   craftables.sort((a, b) => a.name.localeCompare(b.name));
 
   const priceByItemId = new Map<number, number>();
+  const iconByItemId = new Map<number, number>();
   for (const r of rawPrices) {
-    if (r.estimated_price != null) {
-      priceByItemId.set(Number(r.id), Number(r.estimated_price));
-    }
+    const id = Number(r.id);
+    if (r.estimated_price != null) priceByItemId.set(id, Number(r.estimated_price));
+    if (r.icon_id != null) iconByItemId.set(id, Number(r.icon_id));
   }
 
   const skillByName = new Map<string, Skill>();
@@ -107,8 +120,9 @@ function normalize(
 
   return {
     craftables,
-    blueprintByItemId,
+    recipeByItemId,
     priceByItemId,
+    iconByItemId,
     skillByName,
     fetchedAt: Date.now(),
   };
@@ -118,7 +132,8 @@ function normalize(
 
 interface CachedRaw {
   fetchedAt: number;
-  blueprints: RawBlueprint[];
+  blueprints: RawRecipe[];
+  reverse: RawRecipe[];
   prices: RawPrice[];
   skills: RawSkill[];
 }
@@ -144,12 +159,13 @@ function writeCache(c: CachedRaw): void {
 }
 
 async function fetchRaw(): Promise<CachedRaw> {
-  const [blueprints, prices, skills] = await Promise.all([
-    getJson<RawBlueprint[]>("/v2/item_blueprints"),
+  const [blueprints, reverse, prices, skills] = await Promise.all([
+    getJson<RawRecipe[]>("/v2/item_blueprints"),
+    getJson<RawRecipe[]>("/v2/item_reverse_engineering"),
     getJson<RawPrice[]>("/v2/item_prices"),
     getJson<RawSkill[]>("/v2/industry_skills"),
   ]);
-  return { fetchedAt: Date.now(), blueprints, prices, skills };
+  return { fetchedAt: Date.now(), blueprints, reverse, prices, skills };
 }
 
 /**
@@ -162,5 +178,5 @@ export async function loadGameData(forceRefresh = false): Promise<GameData> {
     raw = await fetchRaw();
     writeCache(raw);
   }
-  return normalize(raw.blueprints, raw.prices, raw.skills);
+  return normalize(raw.blueprints, raw.reverse, raw.prices, raw.skills);
 }

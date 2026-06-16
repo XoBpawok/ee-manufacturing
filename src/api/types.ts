@@ -7,15 +7,23 @@ export interface Material {
   quantity: number;
 }
 
-export interface Blueprint {
+export type RecipeKind = "manufacture" | "reverse";
+
+/**
+ * Рецепт виробництва предмета. Два джерела рецептів (виробництво та реверс-
+ * інжиніринг) не перетинаються — кожен предмет має максимум один рецепт.
+ */
+export interface Recipe {
   itemId: number;
   name: string;
   categoryName: string;
   groupName: string;
+  kind: RecipeKind;
   outputNumber: number;
   manufactureCost: number;
   manufactureTime: number; // секунди
-  skills: string[]; // назви релевантних індустрі-скілів
+  passRate: number; // ймовірність успіху (1 для виробництва, <1 для реверсу)
+  skills: string[]; // назви релевантних скілів
   materials: Material[];
 }
 
@@ -25,7 +33,7 @@ export interface Skill {
   time: number[]; // множник зниження часу, індекс 0..4 = рівень 1..5
 }
 
-/** Елемент для селектора — craftable-предмет (виводиться з блюпрінтів). */
+/** Елемент для селектора — craftable-предмет (виводиться з рецептів). */
 export interface CraftableItem {
   id: number;
   name: string;
@@ -35,8 +43,14 @@ export interface CraftableItem {
 
 export interface GameData {
   craftables: CraftableItem[];
-  blueprintByItemId: Map<number, Blueprint>;
+  recipeByItemId: Map<number, Recipe>;
   priceByItemId: Map<number, number>; // estimated_price
-  skillByName: Map<string, Skill>;
+  iconByItemId: Map<number, number>; // itemId → iconId
+  skillByName: Map<string, Skill>; // індустрі-скіли (efficiency/time)
   fetchedAt: number;
+}
+
+/** URL маленької іконки предмета на echoes.mobi. */
+export function iconUrl(iconId: number | undefined): string | undefined {
+  return iconId != null ? `https://echoes.mobi/public/icons/${iconId}.png` : undefined;
 }

@@ -9,10 +9,12 @@ import {
   Row,
   Space,
   Spin,
+  Switch,
+  Tooltip,
   Typography,
   theme,
 } from "antd";
-import { ReloadOutlined } from "@ant-design/icons";
+import { ReloadOutlined, ThunderboltOutlined } from "@ant-design/icons";
 import ukUA from "antd/locale/uk_UA";
 import { ItemSelector } from "./components/ItemSelector";
 import { SkillsPanel } from "./components/SkillsPanel";
@@ -77,6 +79,19 @@ export default function App() {
                       onChange={(v) => calc.setDesiredQty(Number(v) || 1)}
                     />
                   </Space>
+                  <Space direction="vertical" size={2}>
+                    <Text type="secondary">
+                      <ThunderboltOutlined /> Авто-оптимізація
+                    </Text>
+                    <Tooltip title="Автоматично вибирати дешевше: купити чи крафтити (включно з реверс-інжинірингом) для кожного компонента">
+                      <Switch
+                        checked={calc.auto}
+                        onChange={calc.setAuto}
+                        checkedChildren="авто"
+                        unCheckedChildren="вручну"
+                      />
+                    </Tooltip>
+                  </Space>
                   <Button icon={<ReloadOutlined />} onClick={calc.refresh}>
                     Оновити дані
                   </Button>
@@ -112,6 +127,7 @@ export default function App() {
                         <CraftTree
                           tree={calc.tree}
                           rootItemId={calc.rootItemId}
+                          auto={calc.auto}
                           onToggleBuild={calc.toggleBuild}
                           onPriceChange={calc.setPriceOverride}
                         />

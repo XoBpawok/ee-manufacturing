@@ -7,6 +7,7 @@ import type {
   TreeSummary,
 } from "../domain/tree";
 import { formatDuration, formatISK, formatQuantity } from "../domain/format";
+import { ItemIcon } from "./ItemIcon";
 
 const { Text } = Typography;
 
@@ -20,7 +21,17 @@ export function SummaryPanel({ summary, onPriceChange }: Props) {
     summary.buyFinishedCost != null ? summary.buyFinishedCost - summary.grandTotal : null;
 
   const materialColumns: ColumnsType<AggregatedMaterial> = [
-    { title: "Матеріал", dataIndex: "name", key: "name" },
+    {
+      title: "Матеріал",
+      dataIndex: "name",
+      key: "name",
+      render: (name: string, m) => (
+        <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
+          <ItemIcon src={m.iconUrl} size={20} />
+          {name}
+        </span>
+      ),
+    },
     {
       title: "Тип",
       dataIndex: "type",
@@ -79,7 +90,18 @@ export function SummaryPanel({ summary, onPriceChange }: Props) {
   ];
 
   const jobColumns: ColumnsType<JobRow> = [
-    { title: "Елемент", dataIndex: "name", key: "name" },
+    {
+      title: "Елемент",
+      dataIndex: "name",
+      key: "name",
+      render: (name: string, j) => (
+        <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
+          <ItemIcon src={j.iconUrl} size={20} />
+          {name}
+          {j.kind === "reverse" && <Tag color="purple">реверс</Tag>}
+        </span>
+      ),
+    },
     { title: "Jobs", dataIndex: "runs", key: "runs", align: "right" },
     {
       title: "Вартість job",

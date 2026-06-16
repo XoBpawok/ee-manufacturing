@@ -1,4 +1,5 @@
-import type { Blueprint, GameData } from "../api/types";
+import type { GameData, Recipe, RecipeKind } from "../api/types";
+import { iconUrl } from "../api/types";
 import { effectiveQuantity, effectiveTime, type SkillLevels } from "./skills";
 
 export type NodeMode = "build" | "buy";
@@ -8,15 +9,19 @@ export interface BuildNode {
   itemId: number;
   name: string;
   type: string; // тип матеріалу або категорія
+  iconUrl?: string;
   mode: NodeMode;
-  craftable: boolean; // чи існує блюпрінт (чи можна перемкнути на build)
+  craftable: boolean; // чи існує рецепт (чи можна перемкнути на build)
+  recipeKind: RecipeKind | null; // тип рецепту, коли крафтиться
+  passRate: number; // ймовірність успіху рецепту (1 для виробництва)
   quantity: number; // потрібно одиниць цього предмета в цій позиції (з урахуванням скілів)
-  runs: number; // кількість job (тільки build)
+  runs: number; // кількість успішних job (тільки build)
+  attempts: number; // очікувана кількість спроб = runs / passRate (тільки build)
   unitPrice: number; // ціна за одиницю (тільки buy)
   priceKnown: boolean; // чи відома ринкова ціна
   buyCost: number; // quantity × unitPrice (тільки buy)
-  jobCost: number; // manufactureCost × runs (тільки build)
-  jobTime: number; // секунди, effectiveTime × runs (тільки build)
+  jobCost: number; // manufactureCost × attempts (тільки build)
+  jobTime: number; // секунди, effectiveTime × attempts (тільки build)
   nodeTotal: number; // повна вартість піддерева
   children: BuildNode[];
 }
@@ -26,7 +31,7 @@ export interface TreeParams {
   rootItemId: number;
   desiredQty: number;
   levels: SkillLevels;
-  buildSet: Set<number>; // itemId матеріалів у режимі build (корінь завжди build)
+  buildSet: Set<number>; // itemId предметів у режимі build (корінь завжди build)
   priceOverrides: Map<number, number>;
 }
 
@@ -52,19 +57,26 @@ function buildNode(
   visited: Set<number>,
 ): BuildNode {
   const { data, levels, buildSet, priceOverrides } = params;
-  const bp = data.blueprintByItemId.get(itemId);
-  const craftable = bp != null;
+  const recipe = data.recipeByItemId.get(itemId);
+  const craftable = recipe != null;
+  const icon = iconUrl(data.iconByItemId.get(itemId));
 
-  // Будуємо, лише якщо: режим build, блюпрінт існує і немає циклу.
-  const canBuild = mode === "build" && bp != null && !visited.has(itemId);
+  // Будуємо, лише якщо: режим build, рецепт існує і немає циклу.
+  const canBuild = mode === "build" && recipe != null && !visited.has(itemId);
 
   if (canBuild) {
-    const blueprint = bp as Blueprint;
-    const runs = Math.ceil(quantity / blueprint.outputNumber);
+    const r = recipe as Recipe;
+    const runs = Math.ceil(quantity / r.outputNumber);
+    const attempts = r.kind === "reverse" ? runs / r.passRate : runs;
     const nextVisited = new Set(visited).add(itemId);
-    const children = blueprint.materials.map((m, idx) => {
-      const childQty = effectiveQuantity(m.quantity, blueprint, levels, data.skillByName) * runs;
-      const childCraftable = data.blueprintByItemId.has(m.id);
+    const children = r.materials.map((m, idx) => {
+      // Виробництво: скіли efficiency зменшують кількість (на job), × runs.
+      // Реверс: матеріали споживаються за кожну спробу → × attempts.
+      const childQty =
+        r.kind === "manufacture"
+          ? effectiveQuantity(m.quantity, r, levels, data.skillByName) * runs
+          : Math.ceil(m.quantity * attempts);
+      const childCraftable = data.recipeByItemId.has(m.id);
       const childMode: NodeMode = buildSet.has(m.id) && childCraftable ? "build" : "buy";
       return buildNode(
         m.id,
@@ -77,18 +89,22 @@ function buildNode(
         nextVisited,
       );
     });
-    const jobCost = blueprint.manufactureCost * runs;
-    const jobTime = effectiveTime(blueprint, levels, data.skillByName) * runs;
+    const jobCost = r.manufactureCost * attempts;
+    const jobTime = effectiveTime(r, levels, data.skillByName) * attempts;
     const childrenTotal = children.reduce((sum, c) => sum + c.nodeTotal, 0);
     return {
       key: keyPath,
       itemId,
       name,
       type,
+      iconUrl: icon,
       mode: "build",
       craftable,
+      recipeKind: r.kind,
+      passRate: r.passRate,
       quantity,
       runs,
+      attempts,
       unitPrice: 0,
       priceKnown: true,
       buyCost: 0,
@@ -107,10 +123,14 @@ function buildNode(
     itemId,
     name,
     type,
+    iconUrl: icon,
     mode: "buy",
     craftable,
+    recipeKind: null,
+    passRate: 1,
     quantity,
     runs: 0,
+    attempts: 0,
     unitPrice: price,
     priceKnown: known,
     buyCost,
@@ -122,9 +142,9 @@ function buildNode(
 }
 
 export function buildTree(params: TreeParams): BuildNode {
-  const bp = params.data.blueprintByItemId.get(params.rootItemId);
-  const name = bp?.name ?? `#${params.rootItemId}`;
-  const type = bp?.categoryName ?? "Невідомо";
+  const recipe = params.data.recipeByItemId.get(params.rootItemId);
+  const name = recipe?.name ?? `#${params.rootItemId}`;
+  const type = recipe?.categoryName ?? "Невідомо";
   return buildNode(
     params.rootItemId,
     name,
@@ -143,6 +163,7 @@ export interface AggregatedMaterial {
   itemId: number;
   name: string;
   type: string;
+  iconUrl?: string;
   quantity: number;
   unitPrice: number;
   priceKnown: boolean;
@@ -158,6 +179,8 @@ export interface CategorySubtotal {
 export interface JobRow {
   itemId: number;
   name: string;
+  iconUrl?: string;
+  kind: RecipeKind;
   runs: number;
   jobCost: number;
   jobTime: number;
@@ -172,7 +195,7 @@ export interface TreeSummary {
   grandTotal: number;
   totalTime: number;
   buyFinishedCost: number | null; // вартість купити готовий предмет
-  relevantSkills: string[]; // скіли, задіяні у build-вузлах
+  relevantSkills: string[]; // індустрі-скіли, задіяні у build-вузлах
 }
 
 /** Обходить дерево й агрегує buy-вузли, build-вузли та підсумки. */
@@ -196,6 +219,7 @@ export function summarizeTree(root: BuildNode, params: TreeParams): TreeSummary 
           itemId: node.itemId,
           name: node.name,
           type: node.type,
+          iconUrl: node.iconUrl,
           quantity: node.quantity,
           unitPrice: node.unitPrice,
           priceKnown: node.priceKnown,
@@ -205,8 +229,8 @@ export function summarizeTree(root: BuildNode, params: TreeParams): TreeSummary 
     } else {
       totalJobCost += node.jobCost;
       totalTime += node.jobTime;
-      const bp = params.data.blueprintByItemId.get(node.itemId);
-      if (bp) bp.skills.forEach((s) => skills.add(s));
+      const recipe = params.data.recipeByItemId.get(node.itemId);
+      if (recipe) recipe.skills.forEach((s) => { if (params.data.skillByName.has(s)) skills.add(s); });
       const acc = jobMap.get(node.itemId);
       if (acc) {
         acc.runs += node.runs;
@@ -216,6 +240,8 @@ export function summarizeTree(root: BuildNode, params: TreeParams): TreeSummary 
         jobMap.set(node.itemId, {
           itemId: node.itemId,
           name: node.name,
+          iconUrl: node.iconUrl,
+          kind: node.recipeKind ?? "manufacture",
           runs: node.runs,
           jobCost: node.jobCost,
           jobTime: node.jobTime,
