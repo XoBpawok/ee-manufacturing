@@ -136,6 +136,7 @@ export function useCalculator(): Calculator {
       materialEfficiency,
       buildSet,
       priceOverrides,
+      capComponentCostReduction: 0,
     };
     const t = buildTree(params);
     return { tree: t, summary: summarizeTree(t, params) };
