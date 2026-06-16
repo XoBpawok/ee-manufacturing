@@ -114,6 +114,8 @@ export default function App() {
                         skillLevels={calc.skillLevels}
                         onChange={calc.setSkillLevel}
                         onReset={calc.resetSkills}
+                        materialEfficiency={calc.materialEfficiency}
+                        onMaterialEfficiencyChange={calc.setMaterialEfficiency}
                       />
                     </Card>
                   </Col>

@@ -51,20 +51,40 @@ function maxLevels(skillNames: string[]): SkillLevels {
 }
 
 /**
+ * Неперервний коефіцієнт масштабування кількості матеріалів.
+ *
+ * Якщо задано ручне перевизначення `meOverride` (%, де 100 = база блюпрінта),
+ * скіли більше не впливають на матеріали: фактор = meOverride/100.
+ * Інакше — скіл-залежний `skillEfficiencyFactor`.
+ */
+export function materialFactor(
+  recipe: Recipe,
+  levels: SkillLevels,
+  skillByName: Map<string, Skill>,
+  meOverride: number | null,
+): number {
+  if (meOverride != null) return meOverride / 100;
+  return skillEfficiencyFactor(recipe, levels, skillByName);
+}
+
+/**
  * Ефективна кількість матеріалу з урахуванням рівнів скілів.
  *
  * Кількість у блюпрінті задана для МАКСИМАЛЬНИХ скілів, тому масштабуємо
  * відносно максимуму:
  *   qty(levels) = ceil( qtyBp × (1 − effCur/100) / (1 − effMax/100) )
  * На рівні 5 усіх скілів повертає рівно qtyBp.
+ *
+ * `meOverride` (%, опціонально) перекриває скіли: база блюпрінта = 100%.
  */
 export function effectiveQuantity(
   baseQuantity: number,
   recipe: Recipe,
   levels: SkillLevels,
   skillByName: Map<string, Skill>,
+  meOverride: number | null = null,
 ): number {
-  return Math.ceil(baseQuantity * skillEfficiencyFactor(recipe, levels, skillByName));
+  return Math.ceil(baseQuantity * materialFactor(recipe, levels, skillByName, meOverride));
 }
 
 /**

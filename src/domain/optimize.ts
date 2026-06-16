@@ -1,10 +1,11 @@
 import type { GameData } from "../api/types";
-import { skillEfficiencyFactor, type SkillLevels } from "./skills";
+import { materialFactor, type SkillLevels } from "./skills";
 
 export interface OptimizeParams {
   data: GameData;
   rootItemId: number;
   levels: SkillLevels;
+  materialEfficiency: number | null; // ручне ME (%), null = за скілами
   priceOverrides: Map<number, number>;
 }
 
@@ -21,7 +22,7 @@ interface UnitCost {
  * Для рішення використовуються неперервні (без округлення) вартості за одиницю.
  */
 export function computeOptimalBuildSet(params: OptimizeParams): Set<number> {
-  const { data, rootItemId, levels, priceOverrides } = params;
+  const { data, rootItemId, levels, materialEfficiency, priceOverrides } = params;
   const memo = new Map<number, UnitCost>();
   const inProgress = new Set<number>();
 
@@ -50,7 +51,7 @@ export function computeOptimalBuildSet(params: OptimizeParams): Set<number> {
         const childUnit = unit(m.id).cost;
         const perUnit =
           recipe.kind === "manufacture"
-            ? m.quantity * skillEfficiencyFactor(recipe, levels, data.skillByName)
+            ? m.quantity * materialFactor(recipe, levels, data.skillByName, materialEfficiency)
             : m.quantity;
         materials += childUnit * perUnit;
       }

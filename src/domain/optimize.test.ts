@@ -27,6 +27,7 @@ const params = (d: GameData) => ({
   data: d,
   rootItemId: 1,
   levels: new Map<string, number>(),
+  materialEfficiency: null,
   priceOverrides: new Map<number, number>(),
 });
 

@@ -31,6 +31,7 @@ export interface TreeParams {
   rootItemId: number;
   desiredQty: number;
   levels: SkillLevels;
+  materialEfficiency: number | null; // ручне ME (%, 100 = база блюпрінта), null = за скілами
   buildSet: Set<number>; // itemId предметів у режимі build (корінь завжди build)
   priceOverrides: Map<number, number>;
 }
@@ -56,7 +57,7 @@ function buildNode(
   params: TreeParams,
   visited: Set<number>,
 ): BuildNode {
-  const { data, levels, buildSet, priceOverrides } = params;
+  const { data, levels, materialEfficiency, buildSet, priceOverrides } = params;
   const recipe = data.recipeByItemId.get(itemId);
   const craftable = recipe != null;
   const icon = iconUrl(data.iconByItemId.get(itemId));
@@ -74,7 +75,7 @@ function buildNode(
       // Реверс: матеріали споживаються за кожну спробу → × attempts.
       const childQty =
         r.kind === "manufacture"
-          ? effectiveQuantity(m.quantity, r, levels, data.skillByName) * runs
+          ? effectiveQuantity(m.quantity, r, levels, data.skillByName, materialEfficiency) * runs
           : Math.ceil(m.quantity * attempts);
       const childCraftable = data.recipeByItemId.has(m.id);
       const childMode: NodeMode = buildSet.has(m.id) && childCraftable ? "build" : "buy";

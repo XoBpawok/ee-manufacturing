@@ -4,6 +4,8 @@ import {
   combineEfficiency,
   effectiveQuantity,
   effectiveTime,
+  materialFactor,
+  skillEfficiencyFactor,
   MAX_SKILL_LEVEL,
   type SkillLevels,
 } from "./skills";
@@ -56,6 +58,38 @@ describe("effectiveQuantity", () => {
     const q = effectiveQuantity(100, bp, levelsAll(3), skillByName);
     expect(q).toBeGreaterThan(100);
     expect(q).toBeLessThan(154);
+  });
+});
+
+describe("materialFactor", () => {
+  it("без override повертає скіл-фактор", () => {
+    expect(materialFactor(bp, levelsAll(0), skillByName, null)).toBe(
+      skillEfficiencyFactor(bp, levelsAll(0), skillByName),
+    );
+  });
+  it("override 100 → база блюпрінта (фактор 1)", () => {
+    expect(materialFactor(bp, levelsAll(0), skillByName, 100)).toBe(1);
+  });
+  it("override 50 → половина, ігнорує скіли", () => {
+    expect(materialFactor(bp, levelsAll(0), skillByName, 50)).toBe(0.5);
+  });
+  it("override 150 → півтора", () => {
+    expect(materialFactor(bp, levelsAll(5), skillByName, 150)).toBe(1.5);
+  });
+});
+
+describe("effectiveQuantity з override ефективності", () => {
+  it("override 100 = кількість блюпрінта незалежно від скілів", () => {
+    expect(effectiveQuantity(100, bp, levelsAll(0), skillByName, 100)).toBe(100);
+  });
+  it("override 50 = половина (скіли ігноруються)", () => {
+    expect(effectiveQuantity(100, bp, levelsAll(0), skillByName, 50)).toBe(50);
+  });
+  it("override 150 = півтора", () => {
+    expect(effectiveQuantity(100, bp, levelsAll(5), skillByName, 150)).toBe(150);
+  });
+  it("округлює вгору", () => {
+    expect(effectiveQuantity(101, bp, levelsAll(5), skillByName, 50)).toBe(51);
   });
 });
 

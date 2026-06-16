@@ -36,6 +36,7 @@ function baseParams(data: GameData, buildSet: Set<number>): TreeParams {
     rootItemId: 1,
     desiredQty: 1,
     levels: new Map(),
+    materialEfficiency: null,
     buildSet,
     priceOverrides: new Map(),
   };

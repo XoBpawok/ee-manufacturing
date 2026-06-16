@@ -27,6 +27,9 @@ export interface Calculator {
   setSkillLevel: (name: string, level: number) => void;
   resetSkills: () => void;
 
+  materialEfficiency: number | null;
+  setMaterialEfficiency: (value: number | null) => void;
+
   buildSet: Set<number>;
   toggleBuild: (itemId: number) => void;
 
@@ -35,6 +38,7 @@ export interface Calculator {
 
   priceOverrides: Map<number, number>;
   setPriceOverride: (itemId: number, price: number | null) => void;
+  resetPriceOverrides: () => void;
 
   tree: BuildNode | null;
   summary: TreeSummary | null;
@@ -50,6 +54,7 @@ export function useCalculator(): Calculator {
   const [rootItemId, setRootItemId] = useState(NAGLFAR_ITEM_ID);
   const [desiredQty, setDesiredQty] = useState(1);
   const [skillLevels, setSkillLevels] = useState<Map<string, number>>(new Map());
+  const [materialEfficiency, setMaterialEfficiency] = useState<number | null>(null);
   const [manualBuildSet, setManualBuildSet] = useState<Set<number>>(new Set());
   const [auto, setAuto] = useState(false);
   const [priceOverrides, setPriceOverrides] = useState<Map<number, number>>(new Map());
@@ -97,6 +102,8 @@ export function useCalculator(): Calculator {
     });
   }, []);
 
+  const resetPriceOverrides = useCallback(() => setPriceOverrides(new Map()), []);
+
   const handleSetRoot = useCallback((id: number) => {
     setRootItemId(id);
     setManualBuildSet(new Set()); // скидаємо розкриття при зміні предмета
@@ -108,17 +115,31 @@ export function useCalculator(): Calculator {
   const buildSet = useMemo(() => {
     if (!data || !data.recipeByItemId.has(rootItemId)) return manualBuildSet;
     if (!auto) return manualBuildSet;
-    return computeOptimalBuildSet({ data, rootItemId, levels: skillLevels, priceOverrides });
-  }, [data, auto, rootItemId, skillLevels, priceOverrides, manualBuildSet]);
+    return computeOptimalBuildSet({
+      data,
+      rootItemId,
+      levels: skillLevels,
+      materialEfficiency,
+      priceOverrides,
+    });
+  }, [data, auto, rootItemId, skillLevels, materialEfficiency, priceOverrides, manualBuildSet]);
 
   const { tree, summary } = useMemo(() => {
     if (!data || !data.recipeByItemId.has(rootItemId)) {
       return { tree: null, summary: null };
     }
-    const params = { data, rootItemId, desiredQty, levels: skillLevels, buildSet, priceOverrides };
+    const params = {
+      data,
+      rootItemId,
+      desiredQty,
+      levels: skillLevels,
+      materialEfficiency,
+      buildSet,
+      priceOverrides,
+    };
     const t = buildTree(params);
     return { tree: t, summary: summarizeTree(t, params) };
-  }, [data, rootItemId, desiredQty, skillLevels, buildSet, priceOverrides]);
+  }, [data, rootItemId, desiredQty, skillLevels, materialEfficiency, buildSet, priceOverrides]);
 
   return {
     data,
@@ -132,12 +153,15 @@ export function useCalculator(): Calculator {
     skillLevels,
     setSkillLevel,
     resetSkills,
+    materialEfficiency,
+    setMaterialEfficiency,
     buildSet,
     toggleBuild,
     auto,
     setAuto,
     priceOverrides,
     setPriceOverride,
+    resetPriceOverrides,
     tree,
     summary,
   };
