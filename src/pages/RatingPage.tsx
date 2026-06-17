@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Button, Card, Space, Spin, Table, Tag, Typography } from "antd";
+import { Alert, Button, Card, Checkbox, Divider, Space, Spin, Table, Tag, Typography } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { loadGameData } from "../api/client";
 import type { GameData } from "../api/types";
-import { rankCraftProfits, type CraftProfit } from "../domain/rating";
-import { loadPriceOverrides, savePriceOverrides } from "../store/useCalculator";
+import { rankCraftProfits, recipeCategories, type CraftProfit } from "../domain/rating";
+import {
+  loadDisabledCategories,
+  loadPriceOverrides,
+  saveDisabledCategories,
+  savePriceOverrides,
+} from "../store/useCalculator";
 import { ItemIcon } from "../components/ItemIcon";
 import { RatingPriceDrawer } from "../components/RatingPriceDrawer";
 import { formatDuration, formatISK } from "../domain/format";
@@ -111,6 +116,7 @@ export function RatingPage() {
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [priceOverrides, setPriceOverrides] = useState<Map<number, number>>(loadPriceOverrides);
+  const [disabledCategories, setDisabledCategories] = useState<Set<string>>(loadDisabledCategories);
   const [drawerItemId, setDrawerItemId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -139,6 +145,19 @@ export function RatingPage() {
     savePriceOverrides(priceOverrides);
   }, [priceOverrides]);
 
+  useEffect(() => {
+    saveDisabledCategories(disabledCategories);
+  }, [disabledCategories]);
+
+  const toggleCategory = useCallback((category: string) => {
+    setDisabledCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(category)) next.delete(category);
+      else next.add(category);
+      return next;
+    });
+  }, []);
+
   const setPriceOverride = useCallback((itemId: number, price: number | null) => {
     setPriceOverrides((prev) => {
       const next = new Map(prev);
@@ -150,10 +169,19 @@ export function RatingPage() {
 
   const resetPriceOverrides = useCallback(() => setPriceOverrides(new Map()), []);
 
+  const categories = useMemo(() => (data ? recipeCategories(data) : []), [data]);
+
+  const enabledCategories = useMemo(
+    () => new Set(categories.filter((c) => !disabledCategories.has(c))),
+    [categories, disabledCategories],
+  );
+
+  const allEnabled = enabledCategories.size === categories.length;
+
   const rows = useMemo(() => {
     if (!data) return [];
-    return rankCraftProfits({ data, priceOverrides, levels: new Map() });
-  }, [data, priceOverrides]);
+    return rankCraftProfits({ data, priceOverrides, levels: new Map(), enabledCategories });
+  }, [data, priceOverrides, enabledCategories]);
 
   if (loading) {
     return (
@@ -183,7 +211,11 @@ export function RatingPage() {
 
   return (
     <Card
-      title="Топ-50 найприбутковіших для крафту"
+      title={
+        allEnabled
+          ? "Топ-50 найприбутковіших для крафту"
+          : `Топ-50 найприбутковіших — вибрані категорії (${enabledCategories.size}/${categories.length})`
+      }
       extra={
         <Button icon={<ReloadOutlined />} onClick={() => setReloadKey((k) => k + 1)}>
           Оновити дані
@@ -195,6 +227,27 @@ export function RatingPage() {
         Збережені (ваші) ціни мають пріоритет; ринкова (середньотижнева) показується поряд.
         Клік на рядок — редагувати ціни виробу, інгредієнтів і блюпрінтів.
       </Text>
+      <div style={{ marginTop: 12 }}>
+        <Space size={8} wrap align="center">
+          <Text strong>Категорії:</Text>
+          {categories.map((c) => (
+            <Checkbox
+              key={c}
+              checked={enabledCategories.has(c)}
+              onChange={() => toggleCategory(c)}
+            >
+              {c}
+            </Checkbox>
+          ))}
+          <Divider type="vertical" />
+          <Button size="small" onClick={() => setDisabledCategories(new Set())}>
+            Усі
+          </Button>
+          <Button size="small" onClick={() => setDisabledCategories(new Set(categories))}>
+            Жодної
+          </Button>
+        </Space>
+      </div>
       <Table<CraftProfit>
         style={{ marginTop: 16 }}
         rowKey="itemId"

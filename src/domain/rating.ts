@@ -25,6 +25,14 @@ export interface RatingParams {
   priceOverrides: Map<number, number>;
   levels: SkillLevels; // базис скілів (порожня мапа = макс рівні)
   limit?: number; // скільки повернути (default 50)
+  enabledCategories?: Set<string>; // якщо задано — лише ці категорії (undefined = всі)
+}
+
+/** Відсортований унікальний список категорій усіх рецептів (для перемикачів фільтра). */
+export function recipeCategories(data: GameData): string[] {
+  const set = new Set<string>();
+  for (const recipe of data.recipeByItemId.values()) set.add(recipe.categoryName);
+  return [...set].sort();
 }
 
 interface UnitCT {
@@ -43,7 +51,7 @@ interface UnitCT {
  * Базис скілів — максимальні рівні (materialFactor=1), тож кількості/час блюпрінта.
  */
 export function rankCraftProfits(params: RatingParams): CraftProfit[] {
-  const { data, priceOverrides, levels, limit = 50 } = params;
+  const { data, priceOverrides, levels, limit = 50, enabledCategories } = params;
   const memo = new Map<number, UnitCT>();
   const inProgress = new Set<number>();
 
@@ -94,6 +102,7 @@ export function rankCraftProfits(params: RatingParams): CraftProfit[] {
 
   const out: CraftProfit[] = [];
   for (const [itemId, recipe] of data.recipeByItemId) {
+    if (enabledCategories && !enabledCategories.has(recipe.categoryName)) continue;
     const sell = buyPrice(itemId);
     if (sell == null) continue;
     const { cost, costMarket, time, known } = unit(itemId);

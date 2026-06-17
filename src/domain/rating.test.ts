@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { GameData, Recipe } from "../api/types";
-import { rankCraftProfits } from "./rating";
+import { rankCraftProfits, recipeCategories } from "./rating";
 
 function gameData(recipes: Recipe[], prices: [number, number][]): GameData {
   return {
@@ -162,5 +162,47 @@ describe("rankCraftProfits", () => {
     expect(row.sellPrice).toBe(8000);
     expect(row.sellPriceMarket).toBe(5000);
     expect(row.sellIsOverride).toBe(true);
+  });
+
+  it("enabledCategories лишає рядки лише ввімкнених категорій (фільтр до limit)", () => {
+    const ship = mk({
+      itemId: 1, categoryName: "Ship", manufactureCost: 0, manufactureTime: 3600,
+      materials: [{ id: 9, name: "R", type: "Mineral", quantity: 1 }],
+    });
+    // прибутковіший за ship, але інша категорія
+    const module = mk({
+      itemId: 2, categoryName: "Module", manufactureCost: 0, manufactureTime: 3600,
+      materials: [{ id: 9, name: "R", type: "Mineral", quantity: 1 }],
+    });
+    const data = gameData([ship, module], [[1, 100], [2, 1000], [9, 10]]);
+    const rows = rankCraftProfits({
+      data, priceOverrides: noOverrides, levels: noLevels,
+      enabledCategories: new Set(["Ship"]),
+    });
+    expect(rows.map((r) => r.itemId)).toEqual([1]);
+  });
+
+  it("enabledCategories=undefined повертає всі категорії (стара поведінка)", () => {
+    const ship = mk({
+      itemId: 1, categoryName: "Ship", manufactureCost: 0, manufactureTime: 3600,
+      materials: [{ id: 9, name: "R", type: "Mineral", quantity: 1 }],
+    });
+    const module = mk({
+      itemId: 2, categoryName: "Module", manufactureCost: 0, manufactureTime: 3600,
+      materials: [{ id: 9, name: "R", type: "Mineral", quantity: 1 }],
+    });
+    const data = gameData([ship, module], [[1, 100], [2, 1000], [9, 10]]);
+    const rows = rankCraftProfits({ data, priceOverrides: noOverrides, levels: noLevels });
+    expect(rows.map((r) => r.itemId).sort()).toEqual([1, 2]);
+  });
+});
+
+describe("recipeCategories", () => {
+  it("повертає відсортований унікальний список категорій рецептів", () => {
+    const a = mk({ itemId: 1, categoryName: "Ship", materials: [] });
+    const b = mk({ itemId: 2, categoryName: "Module", materials: [] });
+    const c = mk({ itemId: 3, categoryName: "Ship", materials: [] });
+    const data = gameData([a, b, c], []);
+    expect(recipeCategories(data)).toEqual(["Module", "Ship"]);
   });
 });
