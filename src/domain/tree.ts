@@ -2,6 +2,9 @@ import type { GameData, Recipe, RecipeKind } from "../api/types";
 import { iconUrl } from "../api/types";
 import { effectiveQuantity, effectiveTime, type SkillLevels } from "./skills";
 
+/** Тип матеріалу для капітальних компонентів (значення з блюпрінтів echoes.mobi). */
+export const CAPITAL_COMPONENT_TYPE = "Capital Construction Components";
+
 export type NodeMode = "build" | "buy";
 
 export interface BuildNode {
@@ -20,7 +23,7 @@ export interface BuildNode {
   unitPrice: number; // ціна за одиницю (тільки buy)
   priceKnown: boolean; // чи відома ринкова ціна
   buyCost: number; // quantity × unitPrice (тільки buy)
-  jobCost: number; // manufactureCost × attempts (тільки build)
+  jobCost: number; // manufactureCost × attempts × costFactor (Capital Components зі знижкою) (тільки build)
   jobTime: number; // секунди, effectiveTime × attempts (тільки build)
   nodeTotal: number; // повна вартість піддерева
   children: BuildNode[];
@@ -34,6 +37,7 @@ export interface TreeParams {
   materialEfficiency: number | null; // ручне ME (%, 100 = база блюпрінта), null = за скілами
   buildSet: Set<number>; // itemId предметів у режимі build (корінь завжди build)
   priceOverrides: Map<number, number>;
+  capComponentCostReduction: number; // % зниження ISK-вартості job для Capital Components (0–100)
 }
 
 function priceFor(
@@ -57,7 +61,8 @@ function buildNode(
   params: TreeParams,
   visited: Set<number>,
 ): BuildNode {
-  const { data, levels, materialEfficiency, buildSet, priceOverrides } = params;
+  const { data, levels, materialEfficiency, buildSet, priceOverrides, capComponentCostReduction } =
+    params;
   const recipe = data.recipeByItemId.get(itemId);
   const craftable = recipe != null;
   const icon = iconUrl(data.iconByItemId.get(itemId));
@@ -90,7 +95,9 @@ function buildNode(
         nextVisited,
       );
     });
-    const jobCost = r.manufactureCost * attempts;
+    const pct = Math.min(100, Math.max(0, capComponentCostReduction));
+    const costFactor = type === CAPITAL_COMPONENT_TYPE ? 1 - pct / 100 : 1;
+    const jobCost = r.manufactureCost * attempts * costFactor;
     const jobTime = effectiveTime(r, levels, data.skillByName) * attempts;
     const childrenTotal = children.reduce((sum, c) => sum + c.nodeTotal, 0);
     return {

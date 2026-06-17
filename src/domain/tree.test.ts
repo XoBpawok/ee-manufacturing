@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { GameData, Recipe, Skill } from "../api/types";
-import { buildTree, summarizeTree, type TreeParams } from "./tree";
+import { buildTree, summarizeTree, CAPITAL_COMPONENT_TYPE, type TreeParams } from "./tree";
 
 // Дерево: Ship(1) ← 2× Component(2) ← 10× Mineral(3, не craftable)
 export function makeData(): GameData {
@@ -39,6 +39,7 @@ function baseParams(data: GameData, buildSet: Set<number>): TreeParams {
     materialEfficiency: null,
     buildSet,
     priceOverrides: new Map(),
+    capComponentCostReduction: 0,
   };
 }
 
@@ -91,5 +92,73 @@ describe("buildTree + summarizeTree", () => {
   it("relevantSkills збирає скіли лише з build-вузлів", () => {
     const buy = summarizeTree(buildTree(baseParams(makeData(), new Set())), baseParams(makeData(), new Set()));
     expect(buy.relevantSkills).toEqual(["S"]);
+  });
+});
+
+describe("capComponentCostReduction", () => {
+  // Ship(1) ← 2× CapComp(2, type=Capital Construction Components) ← 10× Mineral(3)
+  function makeCapData(): GameData {
+    const skillByName = new Map<string, Skill>([
+      ["S", { name: "S", efficiency: [0, 0, 0, 0, 0], time: [0, 0, 0, 0, 0] }],
+    ]);
+    const shipBp: Recipe = {
+      itemId: 1, name: "Ship", categoryName: "Ship", groupName: "Dread", kind: "manufacture",
+      outputNumber: 1, manufactureCost: 1000, manufactureTime: 100, passRate: 1, skills: ["S"],
+      materials: [{ id: 2, name: "CapComp", type: CAPITAL_COMPONENT_TYPE, quantity: 2 }],
+    };
+    const compBp: Recipe = {
+      itemId: 2, name: "CapComp", categoryName: "Material", groupName: "Components", kind: "manufacture",
+      outputNumber: 1, manufactureCost: 50, manufactureTime: 10, passRate: 1, skills: ["S"],
+      materials: [{ id: 3, name: "Mineral", type: "Mineral", quantity: 10 }],
+    };
+    return {
+      craftables: [],
+      recipeByItemId: new Map([[1, shipBp], [2, compBp]]),
+      priceByItemId: new Map([[2, 500], [3, 5], [1, 99999]]),
+      iconByItemId: new Map(),
+      skillByName,
+      fetchedAt: 0,
+    };
+  }
+
+  function capParams(reduction: number): TreeParams {
+    return {
+      data: makeCapData(),
+      rootItemId: 1,
+      desiredQty: 1,
+      levels: new Map(),
+      materialEfficiency: null,
+      buildSet: new Set([2]), // build the capital component
+      priceOverrides: new Map(),
+      capComponentCostReduction: reduction,
+    };
+  }
+
+  it("знижка 20% зменшує jobCost capital-компонента, не чіпаючи root", () => {
+    const tree = buildTree(capParams(20));
+    const comp = tree.children[0];
+    expect(comp.type).toBe(CAPITAL_COMPONENT_TYPE);
+    expect(comp.jobCost).toBe(50 * 2 * 0.8); // 80 (було 100)
+    expect(tree.jobCost).toBe(1000); // root (type=Ship) без знижки
+
+    const sum = summarizeTree(tree, capParams(20));
+    expect(sum.totalJobCost).toBe(1000 + 80);
+  });
+
+  it("знижка 0% лишає jobCost без змін", () => {
+    const tree = buildTree(capParams(0));
+    expect(tree.children[0].jobCost).toBe(50 * 2);
+  });
+
+  it("знижка 100% обнуляє jobCost capital-компонента", () => {
+    const tree = buildTree(capParams(100));
+    const comp = tree.children[0];
+    expect(comp.jobCost).toBe(0);
+    expect(comp.nodeTotal).toBe(comp.children[0].buyCost); // лишається тільки вартість мінералів
+  });
+
+  it("клампить значення поза діапазоном 0–100", () => {
+    expect(buildTree(capParams(-10)).children[0].jobCost).toBe(50 * 2); // <0 → 0% знижки
+    expect(buildTree(capParams(150)).children[0].jobCost).toBe(0); // >100 → 100% знижки
   });
 });

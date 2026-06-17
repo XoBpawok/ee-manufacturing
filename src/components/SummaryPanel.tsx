@@ -1,4 +1,4 @@
-import { Button, Card, Col, InputNumber, Row, Statistic, Table, Tag, Tooltip, Typography } from "antd";
+import { Button, Card, Col, Collapse, InputNumber, Row, Statistic, Table, Tag, Tooltip, Typography } from "antd";
 import { UndoOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import type {
@@ -207,69 +207,75 @@ export function SummaryPanel({
         </Col>
       </Row>
 
-      <Card
-        title="Список покупок (агреговано)"
+      <Collapse
+        defaultActiveKey={["shopping"]}
         style={{ marginTop: 16 }}
-        size="small"
-        extra={
-          <Button
-            size="small"
-            icon={<UndoOutlined />}
-            onClick={onResetPrices}
-            disabled={priceOverrideCount === 0}
-          >
-            Скинути ціни
-            {priceOverrideCount > 0 ? ` (${priceOverrideCount})` : ""}
-          </Button>
-        }
-      >
-        <Table<AggregatedMaterial>
-          columns={materialColumns}
-          dataSource={summary.shoppingList}
-          rowKey="itemId"
-          pagination={false}
-          size="small"
-          summary={() => (
-            <Table.Summary.Row>
-              <Table.Summary.Cell index={0} colSpan={4}>
-                <Text strong>Разом матеріали</Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={4} align="right">
-                <Text strong>{formatISK(summary.totalBuyCost)}</Text>
-              </Table.Summary.Cell>
-            </Table.Summary.Row>
-          )}
-        />
-      </Card>
-
-      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-        <Col xs={24} lg={12}>
-          <Card title="Підсумки по категоріях" size="small">
-            <Table<CategorySubtotal>
-              columns={categoryColumns}
-              dataSource={summary.categorySubtotals}
-              rowKey="type"
-              pagination={false}
-              size="small"
-            />
-          </Card>
-        </Col>
-        <Col xs={24} lg={12}>
-          <Card
-            title="Виробництво (jobs)"
-            size="small"
-            extra={<Tag color="blue">{summary.jobs.length} елем.</Tag>}
-          >
-            <Table<JobRow>
-              columns={jobColumns}
-              dataSource={summary.jobs}
-              rowKey="itemId"
-              pagination={false}
-              size="small"
-            />
-          </Card>
-        </Col>
-      </Row>
+        items={[
+          {
+            key: "shopping",
+            label: "Список покупок (агреговано)",
+            extra: (
+              <Button
+                size="small"
+                icon={<UndoOutlined />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onResetPrices();
+                }}
+                disabled={priceOverrideCount === 0}
+              >
+                Скинути ціни
+                {priceOverrideCount > 0 ? ` (${priceOverrideCount})` : ""}
+              </Button>
+            ),
+            children: (
+              <Table<AggregatedMaterial>
+                columns={materialColumns}
+                dataSource={summary.shoppingList}
+                rowKey="itemId"
+                pagination={false}
+                size="small"
+                summary={() => (
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell index={0} colSpan={4}>
+                      <Text strong>Разом матеріали</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={4} align="right">
+                      <Text strong>{formatISK(summary.totalBuyCost)}</Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                )}
+              />
+            ),
+          },
+          {
+            key: "categories",
+            label: "Підсумки по категоріях",
+            children: (
+              <Table<CategorySubtotal>
+                columns={categoryColumns}
+                dataSource={summary.categorySubtotals}
+                rowKey="type"
+                pagination={false}
+                size="small"
+              />
+            ),
+          },
+          {
+            key: "jobs",
+            label: `Виробництво (jobs) — ${summary.jobs.length} елем.`,
+            children: (
+              <Table<JobRow>
+                columns={jobColumns}
+                dataSource={summary.jobs}
+                rowKey="itemId"
+                pagination={false}
+                size="small"
+              />
+            ),
+          },
+        ]}
+      />
     </>
   );
 }

@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   Col,
+  Collapse,
   ConfigProvider,
   InputNumber,
   Layout,
@@ -116,6 +117,8 @@ export default function App() {
                         onReset={calc.resetSkills}
                         materialEfficiency={calc.materialEfficiency}
                         onMaterialEfficiencyChange={calc.setMaterialEfficiency}
+                        capComponentCostReduction={calc.capComponentCostReduction}
+                        onCapComponentCostReductionChange={calc.setCapComponentCostReduction}
                       />
                     </Card>
                   </Col>
@@ -128,15 +131,23 @@ export default function App() {
                         priceOverrides={calc.priceOverrides}
                         marketPrices={calc.data.priceByItemId}
                       />
-                      <Card title="Дерево крафту" size="small">
-                        <CraftTree
-                          tree={calc.tree}
-                          rootItemId={calc.rootItemId}
-                          auto={calc.auto}
-                          onToggleBuild={calc.toggleBuild}
-                          onPriceChange={calc.setPriceOverride}
-                        />
-                      </Card>
+                      <Collapse
+                        items={[
+                          {
+                            key: "tree",
+                            label: "Дерево крафту",
+                            children: (
+                              <CraftTree
+                                tree={calc.tree}
+                                rootItemId={calc.rootItemId}
+                                auto={calc.auto}
+                                onToggleBuild={calc.toggleBuild}
+                                onPriceChange={calc.setPriceOverride}
+                              />
+                            ),
+                          },
+                        ]}
+                      />
                     </Space>
                   </Col>
                 </Row>

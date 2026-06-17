@@ -12,6 +12,8 @@ interface Props {
   onReset: () => void;
   materialEfficiency: number | null;
   onMaterialEfficiencyChange: (value: number | null) => void;
+  capComponentCostReduction: number;
+  onCapComponentCostReductionChange: (pct: number) => void;
 }
 
 /** Слайдери рівнів (0..5) для скілів + ручне перевизначення ефективності матеріалів. */
@@ -23,6 +25,8 @@ export function SkillsPanel({
   onReset,
   materialEfficiency,
   onMaterialEfficiencyChange,
+  capComponentCostReduction,
+  onCapComponentCostReductionChange,
 }: Props) {
   const meActive = materialEfficiency != null;
 
@@ -53,6 +57,26 @@ export function SkillsPanel({
           placeholder="За скілами (вимкнено)"
           addonAfter="%"
           onChange={(v) => onMaterialEfficiencyChange(v ?? null)}
+        />
+      </div>
+
+      <div>
+        <Text>
+          Знижка вартості job для Capital Components{" "}
+          <Tooltip title="Зниження ISK-вартості виробництва капітальних компонентів (Capital Construction Components) — напр. від скілів Production Optimization. 0% = без знижки.">
+            <Text type="secondary" style={{ cursor: "help" }}>
+              ⓘ
+            </Text>
+          </Tooltip>
+        </Text>
+        <InputNumber
+          style={{ width: "100%", marginTop: 4 }}
+          min={0}
+          max={100}
+          step={1}
+          value={capComponentCostReduction}
+          addonAfter="%"
+          onChange={(v) => onCapComponentCostReductionChange(v ?? 0)}
         />
       </div>
 
