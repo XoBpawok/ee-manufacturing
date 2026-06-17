@@ -8,6 +8,7 @@ export const NAGLFAR_ITEM_ID = 10701000201;
 
 const PRICE_OVERRIDES_KEY = "ec-manufacturing:priceOverrides:v1";
 const CAP_COST_KEY = "ec-manufacturing:capCostReduction:v1";
+const RATING_DISABLED_CATEGORIES_KEY = "ec-manufacturing:ratingDisabledCategories:v1";
 
 export function loadPriceOverrides(): Map<number, number> {
   try {
@@ -23,6 +24,26 @@ export function loadPriceOverrides(): Map<number, number> {
 export function savePriceOverrides(m: Map<number, number>): void {
   try {
     localStorage.setItem(PRICE_OVERRIDES_KEY, JSON.stringify(Object.fromEntries(m)));
+  } catch {
+    // localStorage недоступний / перевищено квоту — ігноруємо
+  }
+}
+
+/** Вимкнені на сторінці рейтингу категорії. Порожньо = усі ввімкнені. */
+export function loadDisabledCategories(): Set<string> {
+  try {
+    const raw = localStorage.getItem(RATING_DISABLED_CATEGORIES_KEY);
+    if (!raw) return new Set();
+    const arr = JSON.parse(raw) as string[];
+    return new Set(Array.isArray(arr) ? arr.map(String) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+export function saveDisabledCategories(s: Set<string>): void {
+  try {
+    localStorage.setItem(RATING_DISABLED_CATEGORIES_KEY, JSON.stringify([...s]));
   } catch {
     // localStorage недоступний / перевищено квоту — ігноруємо
   }
