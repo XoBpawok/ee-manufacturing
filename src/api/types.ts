@@ -15,6 +15,7 @@ export type RecipeKind = "manufacture" | "reverse";
  */
 export interface Recipe {
   itemId: number;
+  blueprintId: number; // власний id рецепту-блюпрінта (для ціни блюпрінта)
   name: string;
   categoryName: string;
   groupName: string;

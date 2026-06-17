@@ -17,6 +17,7 @@ const skillByName = new Map<string, Skill>([
 
 const bp: Recipe = {
   itemId: 1,
+  blueprintId: 0,
   name: "Test",
   categoryName: "Ship",
   groupName: "G",
