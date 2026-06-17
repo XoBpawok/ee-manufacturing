@@ -25,6 +25,7 @@ export interface BuildNode {
   buyCost: number; // quantity × unitPrice (тільки buy)
   jobCost: number; // manufactureCost × attempts × costFactor (Capital Components зі знижкою) (тільки build)
   jobTime: number; // секунди, effectiveTime × attempts (тільки build)
+  blueprintId: number; // id блюпрінта рецепту (0 для buy-вузла)
   blueprintUnitPrice: number; // ціна одного блюпрінта (0 для buy-вузла)
   blueprintPriceKnown: boolean; // чи відома ринкова ціна блюпрінта
   blueprintCost: number; // blueprintUnitPrice × attempts (0 для buy-вузла)
@@ -123,6 +124,7 @@ function buildNode(
       buyCost: 0,
       jobCost,
       jobTime,
+      blueprintId: r.blueprintId,
       blueprintUnitPrice: bp.price,
       blueprintPriceKnown: bp.known,
       blueprintCost,
@@ -152,6 +154,7 @@ function buildNode(
     buyCost,
     jobCost: 0,
     jobTime: 0,
+    blueprintId: 0,
     blueprintUnitPrice: 0,
     blueprintPriceKnown: true,
     blueprintCost: 0,
@@ -272,7 +275,7 @@ export function summarizeTree(root: BuildNode, params: TreeParams): TreeSummary 
           runs: node.runs,
           jobCost: node.jobCost,
           jobTime: node.jobTime,
-          blueprintId: params.data.recipeByItemId.get(node.itemId)?.blueprintId ?? 0,
+          blueprintId: node.blueprintId,
           blueprintUnitPrice: node.blueprintUnitPrice,
           blueprintPriceKnown: node.blueprintPriceKnown,
           blueprintCost: node.blueprintCost,
