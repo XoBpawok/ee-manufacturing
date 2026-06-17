@@ -18,7 +18,7 @@ const noLevels = new Map<string, number>();
 
 const mk = (over: Partial<Recipe> & Pick<Recipe, "itemId" | "materials">): Recipe => ({
   name: `Item ${over.itemId}`, categoryName: "Cat", groupName: "G", kind: "manufacture",
-  outputNumber: 1, manufactureCost: 0, manufactureTime: 0, passRate: 1, skills: [],
+  outputNumber: 1, manufactureCost: 0, manufactureTime: 0, passRate: 1, blueprintId: 0, skills: [],
   ...over,
 });
 

@@ -15,6 +15,7 @@ interface RawMaterial {
 }
 
 interface RawRecipe {
+  id: string;
   item_id: string;
   name: string;
   category_name: string;
@@ -59,6 +60,7 @@ function parseNumberList(s: string): number[] {
 function toRecipe(r: RawRecipe, kind: RecipeKind): Recipe {
   return {
     itemId: Number(r.item_id),
+    blueprintId: Number(r.id),
     name: r.name,
     categoryName: r.category_name,
     groupName: r.group_name,

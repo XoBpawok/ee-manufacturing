@@ -8,12 +8,12 @@ export function makeData(): GameData {
     ["S", { name: "S", efficiency: [0, 0, 0, 0, 0], time: [0, 0, 0, 0, 0] }],
   ]);
   const shipBp: Recipe = {
-    itemId: 1, name: "Ship", categoryName: "Ship", groupName: "Dread", kind: "manufacture",
+    itemId: 1, blueprintId: 9001, name: "Ship", categoryName: "Ship", groupName: "Dread", kind: "manufacture",
     outputNumber: 1, manufactureCost: 1000, manufactureTime: 100, passRate: 1, skills: ["S"],
     materials: [{ id: 2, name: "Component", type: "Component", quantity: 2 }],
   };
   const compBp: Recipe = {
-    itemId: 2, name: "Component", categoryName: "Component", groupName: "Cap", kind: "manufacture",
+    itemId: 2, blueprintId: 9002, name: "Component", categoryName: "Component", groupName: "Cap", kind: "manufacture",
     outputNumber: 1, manufactureCost: 50, manufactureTime: 10, passRate: 1, skills: ["S"],
     materials: [{ id: 3, name: "Mineral", type: "Mineral", quantity: 10 }],
   };
@@ -102,12 +102,12 @@ describe("capComponentCostReduction", () => {
       ["S", { name: "S", efficiency: [0, 0, 0, 0, 0], time: [0, 0, 0, 0, 0] }],
     ]);
     const shipBp: Recipe = {
-      itemId: 1, name: "Ship", categoryName: "Ship", groupName: "Dread", kind: "manufacture",
+      itemId: 1, blueprintId: 9001, name: "Ship", categoryName: "Ship", groupName: "Dread", kind: "manufacture",
       outputNumber: 1, manufactureCost: 1000, manufactureTime: 100, passRate: 1, skills: ["S"],
       materials: [{ id: 2, name: "CapComp", type: CAPITAL_COMPONENT_TYPE, quantity: 2 }],
     };
     const compBp: Recipe = {
-      itemId: 2, name: "CapComp", categoryName: "Material", groupName: "Components", kind: "manufacture",
+      itemId: 2, blueprintId: 9002, name: "CapComp", categoryName: "Material", groupName: "Components", kind: "manufacture",
       outputNumber: 1, manufactureCost: 50, manufactureTime: 10, passRate: 1, skills: ["S"],
       materials: [{ id: 3, name: "Mineral", type: "Mineral", quantity: 10 }],
     };

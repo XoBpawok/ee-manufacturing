@@ -4,12 +4,12 @@ import { computeOptimalBuildSet } from "./optimize";
 
 function data(componentPrice: number, mineralPrice: number): GameData {
   const ship: Recipe = {
-    itemId: 1, name: "Ship", categoryName: "Ship", groupName: "G", kind: "manufacture",
+    itemId: 1, blueprintId: 9001, name: "Ship", categoryName: "Ship", groupName: "G", kind: "manufacture",
     outputNumber: 1, manufactureCost: 1000, manufactureTime: 100, passRate: 1, skills: [],
     materials: [{ id: 2, name: "Component", type: "Component", quantity: 2 }],
   };
   const comp: Recipe = {
-    itemId: 2, name: "Component", categoryName: "Component", groupName: "G", kind: "manufacture",
+    itemId: 2, blueprintId: 9002, name: "Component", categoryName: "Component", groupName: "G", kind: "manufacture",
     outputNumber: 1, manufactureCost: 50, manufactureTime: 10, passRate: 1, skills: [],
     materials: [{ id: 3, name: "Mineral", type: "Mineral", quantity: 10 }],
   };
@@ -46,7 +46,7 @@ describe("computeOptimalBuildSet", () => {
 
   it("враховує pass_rate реверсу в очікуваній вартості", () => {
     const re: Recipe = {
-      itemId: 5, name: "T2", categoryName: "Mod", groupName: "G", kind: "reverse",
+      itemId: 5, blueprintId: 9005, name: "T2", categoryName: "Mod", groupName: "G", kind: "reverse",
       outputNumber: 1, manufactureCost: 100, manufactureTime: 60, passRate: 0.5, skills: [],
       materials: [{ id: 6, name: "Base", type: "Base", quantity: 1 }],
     };
