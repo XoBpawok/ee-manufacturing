@@ -1,4 +1,5 @@
 import { Card, Col, Collapse, InputNumber, Row, Statistic, Table, Tag, Typography } from "antd";
+import { EditOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import type { ColumnsType } from "antd/es/table";
 import type {
@@ -40,6 +41,10 @@ export function SummaryPanel({
   const finishedPriceKnown = finishedOverridden || finishedMarket != null;
   const savings =
     summary.buyFinishedCost != null ? summary.buyFinishedCost - summary.grandTotal : null;
+  // Show the total caption only when buying more than one unit (unit price ≠ total).
+  const showFinishedTotal =
+    summary.buyFinishedCost != null &&
+    Math.round(summary.buyFinishedCost) !== Math.round(finishedUnitPrice);
 
   const materialColumns: ColumnsType<AggregatedMaterial> = [
     {
@@ -192,34 +197,50 @@ export function SummaryPanel({
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={12} md={6}>
           <Card>
-            <Statistic
-              title={t("summary.buyFinished")}
-              value={summary.buyFinishedCost != null ? Math.round(summary.buyFinishedCost) : "—"}
-              suffix={summary.buyFinishedCost != null ? "ISK" : ""}
-            />
-            <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 2 }}>
-              <Text type="secondary" style={{ fontSize: 11 }}>
-                {t("summary.finishedUnitPrice")}
-              </Text>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Text type="secondary">{t("summary.buyFinished")}</Text>
+              <EditOutlined style={{ color: "rgba(0,0,0,0.25)", fontSize: 12 }} />
+            </div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginTop: 2 }}>
               <InputNumber
-                size="small"
+                variant="borderless"
+                controls={false}
                 value={finishedUnitPrice}
                 min={0}
-                style={{ width: "100%" }}
                 status={finishedPriceKnown ? undefined : "warning"}
                 formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, " ")}
                 parser={(v) => Number((v ?? "").replace(/\s/g, "")) as number}
                 onChange={(v) => v != null && onPriceChange(rootItemId, Number(v))}
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  padding: 0,
+                  fontSize: 22,
+                  fontWeight: 600,
+                  lineHeight: 1.2,
+                }}
               />
-              {finishedOverridden && (
-                <Text type="secondary" style={{ fontSize: 11 }}>
-                  {t("common.marketValue", {
-                    value: finishedMarket != null ? formatISKExact(finishedMarket) : "—",
-                  })}
-                  <FreshnessDot updatedAt={priceMeta.get(rootItemId)?.updatedAt} />
-                </Text>
-              )}
+              <Text type="secondary" style={{ fontSize: 14 }}>
+                ISK
+              </Text>
             </div>
+            {(finishedOverridden || showFinishedTotal) && (
+              <div style={{ marginTop: 2, display: "flex", flexDirection: "column" }}>
+                {finishedOverridden && (
+                  <Text type="secondary" style={{ fontSize: 11 }}>
+                    {t("common.marketValue", {
+                      value: finishedMarket != null ? formatISKExact(finishedMarket) : "—",
+                    })}
+                    <FreshnessDot updatedAt={priceMeta.get(rootItemId)?.updatedAt} />
+                  </Text>
+                )}
+                {showFinishedTotal && (
+                  <Text type="secondary" style={{ fontSize: 11 }}>
+                    {t("summary.finishedTotal", { value: formatISK(summary.buyFinishedCost!) })}
+                  </Text>
+                )}
+              </div>
+            )}
           </Card>
         </Col>
         <Col xs={12} md={6}>

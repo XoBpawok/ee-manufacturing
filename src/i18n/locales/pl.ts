@@ -76,6 +76,7 @@ const pl: Resource = {
     blueprints: "Schematy",
     buyFinished: "Cena rynkowa",
     finishedUnitPrice: "Cena za szt.",
+    finishedTotal: "razem: {{value}}",
     savings: "Oszczędność z wytwarzania",
     moreExpensive: "Drożej niż kupno",
     totalTime: "Łączny czas",

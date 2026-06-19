@@ -76,6 +76,7 @@ const de: Resource = {
     blueprints: "Blaupausen",
     buyFinished: "Marktpreis",
     finishedUnitPrice: "Preis pro Einheit",
+    finishedTotal: "gesamt: {{value}}",
     savings: "Ersparnis durch Herstellung",
     moreExpensive: "Teurer als kaufen",
     totalTime: "Gesamtzeit",

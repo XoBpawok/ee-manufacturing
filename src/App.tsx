@@ -19,7 +19,22 @@ export default function App() {
   }, [t, i18n.language]);
 
   return (
-    <ConfigProvider locale={antdLocaleFor(i18n.language)} theme={{ algorithm: theme.defaultAlgorithm }}>
+    <ConfigProvider
+      locale={antdLocaleFor(i18n.language)}
+      theme={{
+        algorithm: theme.defaultAlgorithm,
+        components: {
+          Card: { bodyPadding: 16, bodyPaddingSM: 12, headerPaddingSM: 12 },
+          Table: {
+            cellPaddingBlockSM: 4,
+            cellPaddingInlineSM: 8,
+            headerBg: "rgba(0,0,0,0.02)",
+          },
+          Statistic: { contentFontSize: 22 },
+          Collapse: { contentPadding: "12px 16px" },
+        },
+      }}
+    >
       <LanguagePrompt />
       <Layout style={{ minHeight: "100vh" }}>
         <Header style={{ display: "flex", alignItems: "center", gap: 24 }}>
@@ -39,7 +54,7 @@ export default function App() {
           />
           <LanguageSwitcher />
         </Header>
-        <Content style={{ padding: 24, width: "100%" }}>
+        <Content style={{ padding: 16, width: "100%" }}>
           <Outlet />
         </Content>
       </Layout>
