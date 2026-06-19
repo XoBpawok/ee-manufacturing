@@ -56,7 +56,7 @@ export function usePrices(): PricesState {
           });
         })
         .catch(() => {
-          void message.warning("Не вдалося зберегти ціну в базі — лишилась локально");
+          void message.warning("Не вдалося зберегти ціну в базі");
         });
     }, UPSERT_DEBOUNCE_MS);
     pendingTimers.current.set(itemId, timer);

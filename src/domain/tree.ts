@@ -292,7 +292,7 @@ export function summarizeTree(root: BuildNode, params: TreeParams): TreeSummary 
   };
   walk(root);
 
-  const shoppingList = [...buyMap.values()].sort((a, b) => b.total - a.total);
+  const shoppingList = [...buyMap.values()].sort((a, b) => a.itemId - b.itemId);
 
   const catMap = new Map<string, CategorySubtotal>();
   for (const m of shoppingList) {
