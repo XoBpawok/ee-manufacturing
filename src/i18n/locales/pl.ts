@@ -138,6 +138,23 @@ const pl: Resource = {
     m: "min",
     s: "s",
   },
+  feedback: {
+    button: "Zostaw opinię",
+    title: "Opinie",
+    nameLabel: "Imię",
+    namePlaceholder: "Opcjonalnie",
+    messageLabel: "Wiadomość",
+    messagePlaceholder: "Twoja opinia, pomysł lub problem…",
+    submit: "Wyślij",
+    sending: "Wysyłanie…",
+    success: "Dziękujemy za opinię!",
+    error: "Nie udało się wysłać. Spróbuj ponownie.",
+    empty: "Brak opinii.",
+    anon: "Anonim",
+    listTitle: "Opinie",
+    loadError: "Nie udało się wczytać opinii.",
+    unavailable: "Opinie są chwilowo niedostępne.",
+  },
 };
 
 export default pl;

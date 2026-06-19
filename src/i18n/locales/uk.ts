@@ -138,6 +138,23 @@ const uk = {
     m: "хв",
     s: "с",
   },
+  feedback: {
+    button: "Залишити відгук",
+    title: "Зворотний зв'язок",
+    nameLabel: "Ім'я",
+    namePlaceholder: "Необов'язково",
+    messageLabel: "Повідомлення",
+    messagePlaceholder: "Ваш відгук, ідея чи проблема…",
+    submit: "Надіслати",
+    sending: "Надсилання…",
+    success: "Дякуємо за відгук!",
+    error: "Не вдалося надіслати. Спробуйте ще раз.",
+    empty: "Відгуків ще немає.",
+    anon: "Анонім",
+    listTitle: "Відгуки",
+    loadError: "Не вдалося завантажити відгуки.",
+    unavailable: "Фідбек наразі недоступний.",
+  },
 };
 
 export default uk;

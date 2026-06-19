@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { antdLocaleFor } from "./i18n/languages";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { LanguagePrompt } from "./components/LanguagePrompt";
+import { FeedbackButton } from "./components/FeedbackButton";
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
@@ -57,6 +58,7 @@ export default function App() {
         <Content style={{ padding: 16, width: "100%" }}>
           <Outlet />
         </Content>
+        <FeedbackButton />
       </Layout>
     </ConfigProvider>
   );

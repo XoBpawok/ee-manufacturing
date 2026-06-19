@@ -138,6 +138,23 @@ const es: Resource = {
     m: "min",
     s: "s",
   },
+  feedback: {
+    button: "Dejar comentario",
+    title: "Comentarios",
+    nameLabel: "Nombre",
+    namePlaceholder: "Opcional",
+    messageLabel: "Mensaje",
+    messagePlaceholder: "Tu comentario, idea o problema…",
+    submit: "Enviar",
+    sending: "Enviando…",
+    success: "¡Gracias por tu comentario!",
+    error: "No se pudo enviar. Inténtalo de nuevo.",
+    empty: "Aún no hay comentarios.",
+    anon: "Anónimo",
+    listTitle: "Comentarios",
+    loadError: "No se pudieron cargar los comentarios.",
+    unavailable: "Los comentarios no están disponibles por ahora.",
+  },
 };
 
 export default es;

@@ -138,6 +138,23 @@ const fr: Resource = {
     m: "min",
     s: "s",
   },
+  feedback: {
+    button: "Laisser un avis",
+    title: "Retour",
+    nameLabel: "Nom",
+    namePlaceholder: "Facultatif",
+    messageLabel: "Message",
+    messagePlaceholder: "Votre avis, idée ou problème…",
+    submit: "Envoyer",
+    sending: "Envoi…",
+    success: "Merci pour votre retour !",
+    error: "Échec de l'envoi. Veuillez réessayer.",
+    empty: "Aucun avis pour l'instant.",
+    anon: "Anonyme",
+    listTitle: "Avis",
+    loadError: "Impossible de charger les avis.",
+    unavailable: "Le retour est actuellement indisponible.",
+  },
 };
 
 export default fr;

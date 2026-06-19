@@ -138,6 +138,23 @@ const de: Resource = {
     m: "Min",
     s: "s",
   },
+  feedback: {
+    button: "Feedback geben",
+    title: "Feedback",
+    nameLabel: "Name",
+    namePlaceholder: "Optional",
+    messageLabel: "Nachricht",
+    messagePlaceholder: "Dein Feedback, Idee oder Problem…",
+    submit: "Senden",
+    sending: "Senden…",
+    success: "Danke für dein Feedback!",
+    error: "Konnte nicht gesendet werden. Bitte erneut versuchen.",
+    empty: "Noch kein Feedback.",
+    anon: "Anonym",
+    listTitle: "Feedback",
+    loadError: "Feedback konnte nicht geladen werden.",
+    unavailable: "Feedback ist derzeit nicht verfügbar.",
+  },
 };
 
 export default de;

@@ -139,6 +139,23 @@ const ko: Resource = {
     m: "분",
     s: "초",
   },
+  feedback: {
+    button: "피드백 남기기",
+    title: "피드백",
+    nameLabel: "이름",
+    namePlaceholder: "선택 사항",
+    messageLabel: "메시지",
+    messagePlaceholder: "의견, 아이디어 또는 문제…",
+    submit: "보내기",
+    sending: "보내는 중…",
+    success: "피드백 감사합니다!",
+    error: "보내지 못했습니다. 다시 시도해 주세요.",
+    empty: "아직 피드백이 없습니다.",
+    anon: "익명",
+    listTitle: "피드백",
+    loadError: "피드백을 불러오지 못했습니다.",
+    unavailable: "피드백을 현재 사용할 수 없습니다.",
+  },
 };
 
 export default ko;

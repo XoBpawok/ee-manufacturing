@@ -138,6 +138,23 @@ const pt: Resource = {
     m: "min",
     s: "s",
   },
+  feedback: {
+    button: "Deixar feedback",
+    title: "Feedback",
+    nameLabel: "Nome",
+    namePlaceholder: "Opcional",
+    messageLabel: "Mensagem",
+    messagePlaceholder: "Seu feedback, ideia ou problema…",
+    submit: "Enviar",
+    sending: "Enviando…",
+    success: "Obrigado pelo feedback!",
+    error: "Não foi possível enviar. Tente novamente.",
+    empty: "Ainda não há feedback.",
+    anon: "Anônimo",
+    listTitle: "Feedback",
+    loadError: "Não foi possível carregar o feedback.",
+    unavailable: "O feedback está indisponível no momento.",
+  },
 };
 
 export default pt;

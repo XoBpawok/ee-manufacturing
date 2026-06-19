@@ -139,6 +139,23 @@ const it: Resource = {
     m: "m",
     s: "s",
   },
+  feedback: {
+    button: "Lascia un feedback",
+    title: "Feedback",
+    nameLabel: "Nome",
+    namePlaceholder: "Facoltativo",
+    messageLabel: "Messaggio",
+    messagePlaceholder: "Il tuo feedback, idea o problema…",
+    submit: "Invia",
+    sending: "Invio…",
+    success: "Grazie per il feedback!",
+    error: "Invio non riuscito. Riprova.",
+    empty: "Ancora nessun feedback.",
+    anon: "Anonimo",
+    listTitle: "Feedback",
+    loadError: "Impossibile caricare i feedback.",
+    unavailable: "Il feedback non è al momento disponibile.",
+  },
 };
 
 export default it;

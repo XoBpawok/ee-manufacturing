@@ -139,6 +139,23 @@ const ja: Resource = {
     m: "分",
     s: "秒",
   },
+  feedback: {
+    button: "フィードバックを送る",
+    title: "フィードバック",
+    nameLabel: "名前",
+    namePlaceholder: "任意",
+    messageLabel: "メッセージ",
+    messagePlaceholder: "ご意見・アイデア・不具合など…",
+    submit: "送信",
+    sending: "送信中…",
+    success: "フィードバックありがとうございます！",
+    error: "送信できませんでした。もう一度お試しください。",
+    empty: "まだフィードバックはありません。",
+    anon: "匿名",
+    listTitle: "フィードバック",
+    loadError: "フィードバックを読み込めませんでした。",
+    unavailable: "フィードバックは現在利用できません。",
+  },
 };
 
 export default ja;

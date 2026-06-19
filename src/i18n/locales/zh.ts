@@ -137,6 +137,23 @@ const zh: Resource = {
     m: "分",
     s: "秒",
   },
+  feedback: {
+    button: "留下反馈",
+    title: "反馈",
+    nameLabel: "名称",
+    namePlaceholder: "可选",
+    messageLabel: "留言",
+    messagePlaceholder: "你的反馈、想法或问题…",
+    submit: "发送",
+    sending: "发送中…",
+    success: "感谢你的反馈！",
+    error: "发送失败，请重试。",
+    empty: "还没有反馈。",
+    anon: "匿名",
+    listTitle: "反馈",
+    loadError: "无法加载反馈。",
+    unavailable: "反馈暂时不可用。",
+  },
 };
 
 export default zh;

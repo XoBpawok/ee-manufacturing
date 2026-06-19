@@ -139,6 +139,23 @@ const tr: Resource = {
     m: "dk",
     s: "sn",
   },
+  feedback: {
+    button: "Geri bildirim bırak",
+    title: "Geri bildirim",
+    nameLabel: "Ad",
+    namePlaceholder: "İsteğe bağlı",
+    messageLabel: "Mesaj",
+    messagePlaceholder: "Geri bildiriminiz, fikriniz veya sorununuz…",
+    submit: "Gönder",
+    sending: "Gönderiliyor…",
+    success: "Geri bildiriminiz için teşekkürler!",
+    error: "Gönderilemedi. Lütfen tekrar deneyin.",
+    empty: "Henüz geri bildirim yok.",
+    anon: "Anonim",
+    listTitle: "Geri bildirimler",
+    loadError: "Geri bildirimler yüklenemedi.",
+    unavailable: "Geri bildirim şu anda kullanılamıyor.",
+  },
 };
 
 export default tr;
