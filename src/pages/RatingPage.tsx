@@ -208,11 +208,6 @@ export function RatingPage() {
           ? t("rating.top50")
           : t("rating.top50Selected", { enabled: enabledCategories.size, total: categories.length })
       }
-      extra={
-        <Button icon={<ReloadOutlined />} onClick={() => setReloadKey((k) => k + 1)}>
-          {t("common.refreshData")}
-        </Button>
-      }
     >
       <Text type="secondary">{t("rating.description")}</Text>
       <div style={{ marginTop: 12 }}>

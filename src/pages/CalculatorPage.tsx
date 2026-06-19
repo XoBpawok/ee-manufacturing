@@ -83,9 +83,6 @@ export function CalculatorPage() {
                   />
                 </Tooltip>
               </Space>
-              <Button icon={<ReloadOutlined />} onClick={calc.refresh}>
-                {t("common.refreshData")}
-              </Button>
             </Space>
           </Card>
 
