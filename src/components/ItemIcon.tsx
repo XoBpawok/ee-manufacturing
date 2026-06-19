@@ -3,7 +3,7 @@ interface Props {
   size?: number;
 }
 
-/** Маленька іконка предмета; нічого не показує, якщо URL невідомий. */
+/** Small item icon; renders nothing if the URL is unknown. */
 export function ItemIcon({ src, size = 24 }: Props) {
   if (!src) {
     return <span style={{ display: "inline-block", width: size, height: size }} />;

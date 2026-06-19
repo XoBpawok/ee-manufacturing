@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Drawer, Card, Col, InputNumber, Row, Space, Statistic, Typography } from "antd";
+import { useTranslation } from "react-i18next";
 import type { GameData } from "../api/types";
 import { buildTree, summarizeTree, fullBuildSet } from "../domain/tree";
 import { SummaryPanel } from "./SummaryPanel";
@@ -28,6 +29,7 @@ export function RatingPriceDrawer({
   onPriceChange,
   onClose,
 }: Props) {
+  const { t } = useTranslation();
   const recipe = itemId != null ? data.recipeByItemId.get(itemId) : undefined;
 
   const { summary } = useMemo(() => {
@@ -59,14 +61,14 @@ export function RatingPriceDrawer({
       width={760}
       open={open}
       onClose={onClose}
-      title={recipe ? `Ціни: ${recipe.name}` : "Ціни"}
+      title={recipe ? t("drawer.pricesTitle", { name: recipe.name }) : t("drawer.prices")}
     >
       {itemId == null || summary == null ? null : (
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
-          <Card size="small" title="Ціна готового виробу (продаж)">
+          <Card size="small" title={t("drawer.sellCard")}>
             <Space align="end" wrap size="large">
               <div style={{ display: "inline-flex", flexDirection: "column" }}>
-                <Text type="secondary">Ваша ціна продажу</Text>
+                <Text type="secondary">{t("drawer.yourSellPrice")}</Text>
                 <InputNumber
                   value={sellOverride ?? market ?? 0}
                   min={0}
@@ -77,7 +79,7 @@ export function RatingPriceDrawer({
                 />
                 {sellOverride != null && (
                   <Text type="secondary" style={{ fontSize: 11 }}>
-                    ринок: {market != null ? formatISKExact(market) : "—"}
+                    {t("common.marketValue", { value: market != null ? formatISKExact(market) : "—" })}
                     <FreshnessDot updatedAt={priceMeta.get(itemId)?.updatedAt} />
                   </Text>
                 )}
@@ -85,11 +87,11 @@ export function RatingPriceDrawer({
             </Space>
             <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
               <Col xs={12} md={8}>
-                <Statistic title="Вартість крафту" value={Math.round(craftCost)} suffix="ISK" />
+                <Statistic title={t("drawer.craftCost")} value={Math.round(craftCost)} suffix="ISK" />
               </Col>
               <Col xs={12} md={8}>
                 <Statistic
-                  title="Прибуток"
+                  title={t("drawer.profit")}
                   value={Math.round(profit)}
                   suffix="ISK"
                   valueStyle={{ color: profit >= 0 ? "#3f8600" : "#cf1322" }}
@@ -97,7 +99,7 @@ export function RatingPriceDrawer({
               </Col>
               <Col xs={12} md={8}>
                 <Statistic
-                  title="Маржа"
+                  title={t("drawer.margin")}
                   value={craftCost > 0 ? (profit / craftCost) * 100 : 0}
                   precision={1}
                   suffix="%"
@@ -107,8 +109,7 @@ export function RatingPriceDrawer({
           </Card>
 
           <Text type="secondary">
-            Ціни інгредієнтів (сировина) і блюпрінтів. Збережені ціни мають пріоритет; під полем —
-            ринкова (середньотижнева) ціна. {formatISK(craftCost)} — поточна вартість крафту.
+            {t("drawer.ingredientsNote", { cost: formatISK(craftCost) })}
           </Text>
 
           <SummaryPanel

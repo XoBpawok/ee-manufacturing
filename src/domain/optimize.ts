@@ -5,21 +5,21 @@ export interface OptimizeParams {
   data: GameData;
   rootItemId: number;
   levels: SkillLevels;
-  materialEfficiency: number | null; // ручне ME (%), null = за скілами
+  materialEfficiency: number | null; // manual ME (%), null = by skills
   priceOverrides: Map<number, number>;
 }
 
 interface UnitCost {
-  cost: number; // мінімальна вартість за одиницю
-  build: boolean; // чи дешевше крафтити, ніж купувати
+  cost: number; // minimum cost per unit
+  build: boolean; // whether crafting is cheaper than buying
 }
 
 /**
- * Обчислює для кожного предмета найдешевше джерело (купити vs крафтити),
- * рекурсивно враховуючи вартість під-матеріалів, скіли та pass_rate реверсу.
- * Повертає набір itemId, які вигідніше крафтити (для buildSet).
+ * Computes the cheapest source for each item (buy vs craft), recursively
+ * accounting for sub-material cost, skills and the reverse pass_rate.
+ * Returns the set of itemId that are cheaper to craft (for buildSet).
  *
- * Для рішення використовуються неперервні (без округлення) вартості за одиницю.
+ * The decision uses continuous (unrounded) per-unit costs.
  */
 export function computeOptimalBuildSet(params: OptimizeParams): Set<number> {
   const { data, rootItemId, levels, materialEfficiency, priceOverrides } = params;
@@ -36,7 +36,7 @@ export function computeOptimalBuildSet(params: OptimizeParams): Set<number> {
     const cached = memo.get(itemId);
     if (cached) return cached;
     if (inProgress.has(itemId)) {
-      // Цикл — у цій гілці предмет можна лише купити.
+      // Cycle — in this branch the item can only be bought.
       return { cost: buyUnit(itemId), build: false };
     }
 
@@ -56,9 +56,9 @@ export function computeOptimalBuildSet(params: OptimizeParams): Set<number> {
         materials += childUnit * perUnit;
       }
       inProgress.delete(itemId);
-      // Реверс блюпрінтів не споживає (виробляє їх), тож блюпрінт-вартість лише
-      // для manufacture. Якщо блюпрінт craftable — беремо мінімум купити/крафтити;
-      // інакше ринкову ціну (невідома → 0).
+      // Reverse does not consume blueprints (it produces them), so blueprint cost
+      // applies only to manufacture. If the blueprint is craftable, take the min of
+      // buy/craft; otherwise the market price (unknown → 0).
       let blueprintCost = 0;
       if (recipe.kind === "manufacture") {
         if (data.recipeByItemId.has(recipe.blueprintId)) {
@@ -70,8 +70,8 @@ export function computeOptimalBuildSet(params: OptimizeParams): Set<number> {
             : data.priceByItemId.get(recipe.blueprintId) ?? 0;
         }
       }
-      // Вартість за одну вироблену одиницю. Для реверсу ділимо на pass_rate
-      // (очікувана кількість спроб на успіх) і на output_number.
+      // Cost per produced unit. For reverse, divide by pass_rate
+      // (expected attempts per success) and by output_number.
       craft =
         (recipe.manufactureCost + blueprintCost + materials) / (recipe.outputNumber * recipe.passRate);
     }
@@ -93,7 +93,7 @@ export function computeOptimalBuildSet(params: OptimizeParams): Set<number> {
         if (!visited.has(m.id)) collect(m.id, new Set(visited).add(itemId));
       }
     }
-    // Блюпрінт manufacture-рецепту теж може бути вигідніше крафтити (реверсом).
+    // A manufacture recipe's blueprint may also be cheaper to craft (via reverse).
     if (recipe.kind === "manufacture" && data.recipeByItemId.has(recipe.blueprintId)) {
       const bpId = recipe.blueprintId;
       if (unit(bpId).build) {
@@ -103,7 +103,7 @@ export function computeOptimalBuildSet(params: OptimizeParams): Set<number> {
     }
   };
 
-  // Корінь завжди крафтиться (це цільовий предмет).
+  // The root is always crafted (it is the target item).
   collect(rootItemId, new Set([rootItemId]));
   return buildSet;
 }

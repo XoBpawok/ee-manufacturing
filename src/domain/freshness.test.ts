@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ageInDays, freshnessColor, freshnessLabel } from "./freshness";
+import { ageInDays, freshnessColor, freshnessDays } from "./freshness";
 
 const NOW = new Date("2026-06-19T12:00:00.000Z");
 const daysAgo = (d: number) => new Date(NOW.getTime() - d * 86_400_000).toISOString();
@@ -25,10 +25,11 @@ describe("freshnessColor", () => {
   });
 });
 
-describe("freshnessLabel", () => {
-  it("форматує вік", () => {
-    expect(freshnessLabel(daysAgo(0), NOW)).toBe("оновлено сьогодні");
-    expect(freshnessLabel(daysAgo(1), NOW)).toBe("оновлено вчора");
-    expect(freshnessLabel(daysAgo(7), NOW)).toBe("оновлено 7 дн. тому");
+describe("freshnessDays", () => {
+  it("рахує цілі дні, не менше нуля", () => {
+    expect(freshnessDays(daysAgo(0), NOW)).toBe(0);
+    expect(freshnessDays(daysAgo(1), NOW)).toBe(1);
+    expect(freshnessDays(daysAgo(7), NOW)).toBe(7);
+    expect(freshnessDays(daysAgo(-5), NOW)).toBe(0);
   });
 });

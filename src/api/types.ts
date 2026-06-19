@@ -1,4 +1,4 @@
-// Нормалізовані доменні типи (після парсингу string→number з API).
+// Normalized domain types (after parsing string→number from the API).
 
 export interface Material {
   id: number;
@@ -10,31 +10,31 @@ export interface Material {
 export type RecipeKind = "manufacture" | "reverse";
 
 /**
- * Рецепт виробництва предмета. Два джерела рецептів (виробництво та реверс-
- * інжиніринг) не перетинаються — кожен предмет має максимум один рецепт.
+ * Item production recipe. The two recipe sources (manufacturing and reverse
+ * engineering) do not overlap — each item has at most one recipe.
  */
 export interface Recipe {
   itemId: number;
-  blueprintId: number; // власний id рецепту-блюпрінта (для ціни блюпрінта)
+  blueprintId: number; // own id of the blueprint recipe (for the blueprint price)
   name: string;
   categoryName: string;
   groupName: string;
   kind: RecipeKind;
   outputNumber: number;
   manufactureCost: number;
-  manufactureTime: number; // секунди
-  passRate: number; // ймовірність успіху (1 для виробництва, <1 для реверсу)
-  skills: string[]; // назви релевантних скілів
+  manufactureTime: number; // seconds
+  passRate: number; // success probability (1 for manufacturing, <1 for reverse)
+  skills: string[]; // names of relevant skills
   materials: Material[];
 }
 
 export interface Skill {
   name: string;
-  efficiency: number[]; // % зниження кількості, індекс 0..4 = рівень 1..5
-  time: number[]; // множник зниження часу, індекс 0..4 = рівень 1..5
+  efficiency: number[]; // % quantity reduction, index 0..4 = level 1..5
+  time: number[]; // time-reduction multiplier, index 0..4 = level 1..5
 }
 
-/** Елемент для селектора — craftable-предмет (виводиться з рецептів). */
+/** Item for the selector — a craftable item (derived from recipes). */
 export interface CraftableItem {
   id: number;
   name: string;
@@ -47,11 +47,11 @@ export interface GameData {
   recipeByItemId: Map<number, Recipe>;
   priceByItemId: Map<number, number>; // estimated_price
   iconByItemId: Map<number, number>; // itemId → iconId
-  skillByName: Map<string, Skill>; // індустрі-скіли (efficiency/time)
+  skillByName: Map<string, Skill>; // industry skills (efficiency/time)
   fetchedAt: number;
 }
 
-/** URL маленької іконки предмета на echoes.mobi. */
+/** URL of the item's small icon on echoes.mobi. */
 export function iconUrl(iconId: number | undefined): string | undefined {
   return iconId != null ? `https://echoes.mobi/public/icons/${iconId}.png` : undefined;
 }

@@ -2,31 +2,31 @@ import type { GameData, Recipe, RecipeKind } from "../api/types";
 import { iconUrl } from "../api/types";
 import { effectiveQuantity, effectiveTime, type SkillLevels } from "./skills";
 
-/** Тип матеріалу для капітальних компонентів (значення з блюпрінтів echoes.mobi). */
+/** Material type for capital components (value from echoes.mobi blueprints). */
 export const CAPITAL_COMPONENT_TYPE = "Capital Construction Components";
 
 export type NodeMode = "build" | "buy";
 
 export interface BuildNode {
-  key: string; // унікальний шлях у дереві (для таблиці)
+  key: string; // unique path in the tree (for the table)
   itemId: number;
   name: string;
-  type: string; // тип матеріалу або категорія
+  type: string; // material type or category
   iconUrl?: string;
   mode: NodeMode;
-  craftable: boolean; // чи існує рецепт (чи можна перемкнути на build)
-  recipeKind: RecipeKind | null; // тип рецепту, коли крафтиться
-  passRate: number; // ймовірність успіху рецепту (1 для виробництва)
-  quantity: number; // потрібно одиниць цього предмета в цій позиції (з урахуванням скілів)
-  runs: number; // кількість успішних job (тільки build)
-  attempts: number; // очікувана кількість спроб = runs / passRate (тільки build)
-  unitPrice: number; // ціна за одиницю (тільки buy)
-  priceKnown: boolean; // чи відома ринкова ціна
-  buyCost: number; // quantity × unitPrice (тільки buy)
-  jobCost: number; // manufactureCost × attempts × costFactor (Capital Components зі знижкою) (тільки build)
-  jobTime: number; // секунди, effectiveTime × attempts (тільки build)
-  isBlueprint: boolean; // чи цей вузол — блюпрінт, який споживає батьківський manufacture-job
-  nodeTotal: number; // повна вартість піддерева
+  craftable: boolean; // whether a recipe exists (whether it can be switched to build)
+  recipeKind: RecipeKind | null; // recipe kind when crafted
+  passRate: number; // recipe success probability (1 for manufacturing)
+  quantity: number; // units of this item needed at this position (skills applied)
+  runs: number; // number of successful jobs (build only)
+  attempts: number; // expected number of attempts = runs / passRate (build only)
+  unitPrice: number; // price per unit (buy only)
+  priceKnown: boolean; // whether the market price is known
+  buyCost: number; // quantity × unitPrice (buy only)
+  jobCost: number; // manufactureCost × attempts × costFactor (Capital Components discounted) (build only)
+  jobTime: number; // seconds, effectiveTime × attempts (build only)
+  isBlueprint: boolean; // whether this node is a blueprint consumed by the parent manufacture job
+  nodeTotal: number; // full subtree cost
   children: BuildNode[];
 }
 
@@ -35,10 +35,10 @@ export interface TreeParams {
   rootItemId: number;
   desiredQty: number;
   levels: SkillLevels;
-  materialEfficiency: number | null; // ручне ME (%, 100 = база блюпрінта), null = за скілами
-  buildSet: Set<number>; // itemId предметів у режимі build (корінь завжди build)
+  materialEfficiency: number | null; // manual ME (%, 100 = blueprint base), null = by skills
+  buildSet: Set<number>; // itemId of items in build mode (root is always build)
   priceOverrides: Map<number, number>;
-  capComponentCostReduction: number; // % зниження ISK-вартості job для Capital Components (0–100)
+  capComponentCostReduction: number; // % reduction of ISK job cost for Capital Components (0–100)
 }
 
 function priceFor(
@@ -69,7 +69,7 @@ function buildNode(
   const craftable = recipe != null;
   const icon = iconUrl(data.iconByItemId.get(itemId));
 
-  // Будуємо, лише якщо: режим build, рецепт існує і немає циклу.
+  // Build only if: build mode, a recipe exists, and there is no cycle.
   const canBuild = mode === "build" && recipe != null && !visited.has(itemId);
 
   if (canBuild) {
@@ -78,8 +78,8 @@ function buildNode(
     const attempts = r.kind === "reverse" ? runs / r.passRate : runs;
     const nextVisited = new Set(visited).add(itemId);
     const children = r.materials.map((m, idx) => {
-      // Виробництво: скіли efficiency зменшують кількість (на job), × runs.
-      // Реверс: матеріали споживаються за кожну спробу → × attempts.
+      // Manufacture: efficiency skills reduce quantity (per job), × runs.
+      // Reverse: materials are consumed per attempt → × attempts.
       const childQty =
         r.kind === "manufacture"
           ? effectiveQuantity(m.quantity, r, levels, data.skillByName, materialEfficiency) * runs
@@ -98,16 +98,16 @@ function buildNode(
       );
     });
 
-    // Manufacture-job споживає блюпрінт (один на спробу). Реверс блюпрінтів НЕ
-    // споживає (він їх виробляє з датакорів), тож для kind === "reverse"
-    // блюпрінт-вузол не додається — це й виправляє само-посилання blueprintId.
+    // A manufacture job consumes a blueprint (one per attempt). Reverse does NOT
+    // consume blueprints (it produces them from datacores), so for kind === "reverse"
+    // no blueprint node is added — this also fixes the blueprintId self-reference.
     if (r.kind === "manufacture") {
       const bpId = r.blueprintId;
       const bpRecipe = data.recipeByItemId.get(bpId);
       const bpCraftable = bpRecipe != null;
       const bpPrice = priceFor(bpId, data, priceOverrides);
-      // Показуємо блюпрінт, лише якщо він craftable або має відому ціну;
-      // інакше (немає ні рецепту, ні ціни) внесок = 0, як і раніше.
+      // Show the blueprint only if it is craftable or has a known price;
+      // otherwise (no recipe and no price) the contribution is 0, as before.
       if (bpCraftable || bpPrice.known) {
         const bpName = bpRecipe?.name ?? `${name} Blueprint`;
         const bpType = bpRecipe?.categoryName ?? "Blueprint";
@@ -147,7 +147,7 @@ function buildNode(
     };
   }
 
-  // Режим buy (або не craftable / цикл).
+  // Buy mode (or not craftable / cycle).
   const { price, known } = priceFor(itemId, data, priceOverrides);
   const buyCost = quantity * price;
   return {
@@ -190,7 +190,7 @@ export function buildTree(params: TreeParams): BuildNode {
   );
 }
 
-// ---- Агрегації ----
+// ---- Aggregations ----
 
 export interface AggregatedMaterial {
   itemId: number;
@@ -220,19 +220,19 @@ export interface JobRow {
 }
 
 export interface TreeSummary {
-  shoppingList: AggregatedMaterial[]; // матеріали, що купуємо (buy-вузли, крім блюпрінтів)
+  shoppingList: AggregatedMaterial[]; // materials we buy (buy nodes, excluding blueprints)
   categorySubtotals: CategorySubtotal[];
-  jobs: JobRow[]; // усе, що виробляємо (build-вузли), агреговано по предмету
-  totalBuyCost: number; // куплені матеріали (без блюпрінтів)
-  totalJobCost: number; // вартість усіх job (включно з реверсом крафтованих блюпрінтів)
-  totalBlueprintCost: number; // вартість куплених блюпрінтів
+  jobs: JobRow[]; // everything we produce (build nodes), aggregated by item
+  totalBuyCost: number; // bought materials (excluding blueprints)
+  totalJobCost: number; // cost of all jobs (including reverse of crafted blueprints)
+  totalBlueprintCost: number; // cost of bought blueprints
   grandTotal: number;
   totalTime: number;
-  buyFinishedCost: number | null; // вартість купити готовий предмет
-  relevantSkills: string[]; // індустрі-скіли, задіяні у build-вузлах
+  buyFinishedCost: number | null; // cost to buy the finished item
+  relevantSkills: string[]; // industry skills involved in build nodes
 }
 
-/** Обходить дерево й агрегує buy-вузли, build-вузли та підсумки. */
+/** Walks the tree and aggregates buy nodes, build nodes and subtotals. */
 export function summarizeTree(root: BuildNode, params: TreeParams): TreeSummary {
   const buyMap = new Map<number, AggregatedMaterial>();
   const jobMap = new Map<number, JobRow>();
@@ -244,7 +244,7 @@ export function summarizeTree(root: BuildNode, params: TreeParams): TreeSummary 
 
   const walk = (node: BuildNode): void => {
     if (node.mode === "buy") {
-      // Куплені блюпрінти — в окремий бакет; у список матеріалів не потрапляють.
+      // Bought blueprints go into a separate bucket; not added to the material list.
       if (node.isBlueprint) {
         totalBlueprintCost += node.buyCost;
         return;
@@ -325,7 +325,7 @@ export function summarizeTree(root: BuildNode, params: TreeParams): TreeSummary 
   };
 }
 
-/** Набір усіх craftable-предметів у піддереві кореня (для «будувати все»). */
+/** Set of all craftable items in the root's subtree (for "build everything"). */
 export function fullBuildSet(data: GameData, rootItemId: number): Set<number> {
   const set = new Set<number>();
   const walk = (id: number, visited: Set<number>): void => {

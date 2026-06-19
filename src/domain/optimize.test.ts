@@ -53,25 +53,25 @@ describe("computeOptimalBuildSet", () => {
     const d: GameData = {
       craftables: [],
       recipeByItemId: new Map([[5, re]]),
-      // base коштує 100; очікувана вартість реверсу = (100 + 1×100)/0.5 = 400
+      // base costs 100; expected reverse cost = (100 + 1×100)/0.5 = 400
       priceByItemId: new Map([[5, 1000], [6, 100]]),
       iconByItemId: new Map(),
       skillByName: new Map(),
       fetchedAt: 0,
     };
-    // реверс (400) дешевший за купівлю T2 (1000) → крафтимо
+    // reverse (400) is cheaper than buying T2 (1000) → craft
     const set = computeOptimalBuildSet({ ...params(d), rootItemId: 5 });
-    // root не додається в set; перевіряємо, що base залишається купівлею
+    // root is not added to the set; check that base stays a buy
     expect(set.has(6)).toBe(false);
 
-    // якщо ціна T2 нижча за очікувану вартість реверсу — корінь усе одно крафтиться
-    // (root завжди build), тож перевіряємо принаймні відсутність помилок
+    // if the T2 price is lower than the expected reverse cost, the root is still crafted
+    // (root is always build), so we at least check there are no errors
     expect(set).toBeInstanceOf(Set);
   });
 
   it("враховує ціну блюпрінта в рішенні buy/build", () => {
-    // без блюпрінта: craft = 50 + 10×5 = 100 < buy 500 → build
-    // з блюпрінтом 9002 = 1000: craft = 1100 > buy 500 → buy
+    // without the blueprint: craft = 50 + 10×5 = 100 < buy 500 → build
+    // with blueprint 9002 = 1000: craft = 1100 > buy 500 → buy
     const d = data(500, 5);
     const set = computeOptimalBuildSet({
       ...params(d),
@@ -80,7 +80,7 @@ describe("computeOptimalBuildSet", () => {
     expect(set.has(2)).toBe(false);
   });
 
-  // Корабель(1) споживає Ship Blueprint(60), який сам крафтиться реверсом із Datacore(4).
+  // Ship(1) consumes Ship Blueprint(60), which is itself crafted by reverse from Datacore(4).
   function bpData(buyBlueprint: number, datacorePrice: number): GameData {
     const ship: Recipe = {
       itemId: 1, blueprintId: 60, name: "Ship", categoryName: "Ship", groupName: "G", kind: "manufacture",
@@ -115,7 +115,7 @@ describe("computeOptimalBuildSet", () => {
   });
 
   it("реверс-матеріал крафтиться попри високу ринкову ціну власного блюпрінта", () => {
-    // ship(1) ← reverse-матеріал(5)×1; reverse(5): blueprintId=5 (само-посилання)
+    // ship(1) ← reverse material(5)×1; reverse(5): blueprintId=5 (self-reference)
     const ship: Recipe = {
       itemId: 1, blueprintId: 9001, name: "Ship", categoryName: "Ship", groupName: "G", kind: "manufacture",
       outputNumber: 1, manufactureCost: 0, manufactureTime: 0, passRate: 1, skills: [],
@@ -129,8 +129,8 @@ describe("computeOptimalBuildSet", () => {
     const d: GameData = {
       craftables: [],
       recipeByItemId: new Map([[1, ship], [5, re]]),
-      // craft5 (виправлено) = (100 + 100)/0.5 = 400 < buy 1000 → build
-      // craft5 (баг) = (100 + 100 + 1000)/0.5 = 2400 > 1000 → buy
+      // craft5 (fixed) = (100 + 100)/0.5 = 400 < buy 1000 → build
+      // craft5 (bug) = (100 + 100 + 1000)/0.5 = 2400 > 1000 → buy
       priceByItemId: new Map([[5, 1000], [6, 100]]),
       iconByItemId: new Map(),
       skillByName: new Map(),

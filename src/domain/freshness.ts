@@ -15,9 +15,8 @@ export function freshnessColor(updatedAt: string, now: Date = new Date()): strin
   return `rgb(${lerp(GREEN.r, RED.r)}, ${lerp(GREEN.g, RED.g)}, ${lerp(GREEN.b, RED.b)})`;
 }
 
-export function freshnessLabel(updatedAt: string, now: Date = new Date()): string {
-  const days = Math.floor(ageInDays(updatedAt, now));
-  if (days <= 0) return "оновлено сьогодні";
-  if (days === 1) return "оновлено вчора";
-  return `оновлено ${days} дн. тому`;
+// Whole days since the price was updated (floored, never negative).
+// The label wording is localized in the FreshnessDot component.
+export function freshnessDays(updatedAt: string, now: Date = new Date()): number {
+  return Math.max(0, Math.floor(ageInDays(updatedAt, now)));
 }

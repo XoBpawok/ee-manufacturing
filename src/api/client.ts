@@ -1,15 +1,15 @@
 import type { CraftableItem, GameData, Recipe, RecipeKind, Skill } from "./types";
 
-// echoes.mobi більше не віддає CORS-заголовки, тож браузер не може тягнути API
-// напряму. Дані знімаються серверним снапшотом (scripts/fetch-data.mjs → CI) у
-// public/data/*.json і вантажаться звідси same-origin. BASE_URL враховує підшлях
-// GitHub Pages (напр. /ec-manufacturing/).
+// echoes.mobi no longer returns CORS headers, so the browser cannot fetch the API
+// directly. The data is captured by a server-side snapshot (scripts/fetch-data.mjs → CI)
+// into public/data/*.json and loaded from here same-origin. BASE_URL accounts for the
+// GitHub Pages subpath (e.g. /ec-manufacturing/).
 const DATA_BASE = `${import.meta.env.BASE_URL}data`;
 
 const CACHE_KEY = "ec-manufacturing:gamedata:v3";
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 години
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-// ---- Сирі форми відповідей API (поля приходять рядками) ----
+// ---- Raw API response shapes (fields arrive as strings) ----
 
 interface RawMaterial {
   id: number;
@@ -93,7 +93,7 @@ function normalize(
   const craftables: CraftableItem[] = [];
   const addRecipe = (r: RawRecipe, kind: RecipeKind) => {
     const recipe = toRecipe(r, kind);
-    // Множини рецептів не перетинаються; на випадок дубля — не перезаписуємо.
+    // Recipe sets do not overlap; in case of a duplicate, do not overwrite.
     if (recipeByItemId.has(recipe.itemId)) return;
     recipeByItemId.set(recipe.itemId, recipe);
     craftables.push({
@@ -134,7 +134,7 @@ function normalize(
   };
 }
 
-// ---- Кеш у localStorage ----
+// ---- localStorage cache ----
 
 interface CachedRaw {
   fetchedAt: number;
@@ -160,7 +160,7 @@ function writeCache(c: CachedRaw): void {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(c));
   } catch {
-    // кеш необовʼязковий (напр. перевищено квоту) — ігноруємо
+    // the cache is optional (e.g. quota exceeded) — ignore
   }
 }
 
@@ -175,8 +175,8 @@ async function fetchRaw(): Promise<CachedRaw> {
 }
 
 /**
- * Завантажує всі дані гри. Використовує кеш localStorage, якщо він свіжий
- * і не передано forceRefresh.
+ * Loads all game data. Uses the localStorage cache if it is fresh and
+ * forceRefresh was not passed.
  */
 export async function loadGameData(forceRefresh = false): Promise<GameData> {
   let raw = forceRefresh ? null : readCache();

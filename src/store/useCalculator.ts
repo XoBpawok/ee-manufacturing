@@ -11,7 +11,7 @@ export const NAGLFAR_ITEM_ID = 10701000201;
 const CAP_COST_KEY = "ec-manufacturing:capCostReduction:v1";
 const RATING_DISABLED_CATEGORIES_KEY = "ec-manufacturing:ratingDisabledCategories:v1";
 
-/** Вимкнені на сторінці рейтингу категорії. Порожньо = усі ввімкнені. */
+/** Categories disabled on the rating page. Empty = all enabled. */
 export function loadDisabledCategories(): Set<string> {
   try {
     const raw = localStorage.getItem(RATING_DISABLED_CATEGORIES_KEY);
@@ -27,7 +27,7 @@ export function saveDisabledCategories(s: Set<string>): void {
   try {
     localStorage.setItem(RATING_DISABLED_CATEGORIES_KEY, JSON.stringify([...s]));
   } catch {
-    // localStorage недоступний / перевищено квоту — ігноруємо
+    // localStorage unavailable / quota exceeded — ignore
   }
 }
 
@@ -45,7 +45,7 @@ function saveCapCostReduction(n: number): void {
   try {
     localStorage.setItem(CAP_COST_KEY, String(n));
   } catch {
-    // ігноруємо
+    // ignore
   }
 }
 
@@ -151,11 +151,11 @@ export function useCalculator(): Calculator {
 
   const handleSetRoot = useCallback((id: number) => {
     setRootItemId(id);
-    setManualBuildSet(new Set()); // скидаємо розкриття при зміні предмета
+    setManualBuildSet(new Set()); // reset expansion when the item changes
   }, []);
 
-  // Коли увімкнено авто — buildSet обчислюється оптимізатором (найдешевше
-  // джерело для кожного предмета); інакше використовується ручний набір.
+  // When auto is on, buildSet is computed by the optimizer (cheapest source for
+  // each item); otherwise the manual set is used.
   const buildSet = useMemo(() => {
     if (!data || !data.recipeByItemId.has(rootItemId)) return manualBuildSet;
     if (!auto) return manualBuildSet;

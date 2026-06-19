@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Button, Card, Checkbox, Divider, Space, Spin, Table, Tag, Typography } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import type { ColumnsType } from "antd/es/table";
 import { loadGameData } from "../api/client";
 import type { GameData } from "../api/types";
@@ -13,100 +15,109 @@ import { formatDuration, formatISK } from "../domain/format";
 
 const { Text } = Typography;
 
-const columns: ColumnsType<CraftProfit> = [
-  {
-    title: "Предмет",
-    dataIndex: "name",
-    key: "name",
-    render: (_: string, r: CraftProfit) => (
-      <Space>
-        <ItemIcon src={r.iconUrl} />
-        <span>{r.name}</span>
-        {r.kind === "reverse" && <Tag color="purple">реверс</Tag>}
-      </Space>
-    ),
-  },
-  {
-    title: "Категорія",
-    dataIndex: "categoryName",
-    key: "categoryName",
-    render: (_: string, r: CraftProfit) => (
-      <Space direction="vertical" size={0}>
-        <span>{r.categoryName}</span>
-        <Text type="secondary" style={{ fontSize: 12 }}>{r.groupName}</Text>
-      </Space>
-    ),
-  },
-  {
-    title: "Ціна продажу",
-    dataIndex: "sellPrice",
-    key: "sellPrice",
-    align: "right",
-    sorter: (a, b) => a.sellPrice - b.sellPrice,
-    render: (_: number, r: CraftProfit) => (
-      <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-end" }}>
-        <span>
-          {formatISK(r.sellPrice)} {r.sellIsOverride && <Tag color="blue" style={{ marginInlineEnd: 0 }}>своя</Tag>}
-        </span>
-        {r.sellIsOverride && (
-          <Text type="secondary" style={{ fontSize: 11 }}>ринок: {formatISK(r.sellPriceMarket)}</Text>
-        )}
-      </div>
-    ),
-  },
-  {
-    title: "Вартість крафту",
-    dataIndex: "craftCost",
-    key: "craftCost",
-    align: "right",
-    sorter: (a, b) => a.craftCost - b.craftCost,
-    render: (_: number, r: CraftProfit) => (
-      <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-end" }}>
-        <span>{formatISK(r.craftCost)}</span>
-        {Math.round(r.craftCostMarket) !== Math.round(r.craftCost) && (
-          <Text type="secondary" style={{ fontSize: 11 }}>за ринком: {formatISK(r.craftCostMarket)}</Text>
-        )}
-      </div>
-    ),
-  },
-  {
-    title: "Прибуток",
-    dataIndex: "profit",
-    key: "profit",
-    align: "right",
-    sorter: (a, b) => a.profit - b.profit,
-    render: (v: number) => (
-      <Text type={v >= 0 ? "success" : "danger"}>{formatISK(v)}</Text>
-    ),
-  },
-  {
-    title: "Маржа",
-    dataIndex: "margin",
-    key: "margin",
-    align: "right",
-    sorter: (a, b) => a.margin - b.margin,
-    render: (v: number) => `${(v * 100).toFixed(1)}%`,
-  },
-  {
-    title: "Час",
-    dataIndex: "craftTime",
-    key: "craftTime",
-    align: "right",
-    sorter: (a, b) => a.craftTime - b.craftTime,
-    render: (v: number) => formatDuration(v),
-  },
-  {
-    title: "ISK/год",
-    dataIndex: "profitPerHour",
-    key: "profitPerHour",
-    align: "right",
-    defaultSortOrder: "descend",
-    sorter: (a, b) => a.profitPerHour - b.profitPerHour,
-    render: (v: number) => formatISK(v),
-  },
-];
+function buildColumns(t: TFunction): ColumnsType<CraftProfit> {
+  return [
+    {
+      title: t("rating.item"),
+      dataIndex: "name",
+      key: "name",
+      render: (_: string, r: CraftProfit) => (
+        <Space>
+          <ItemIcon src={r.iconUrl} />
+          <span>{r.name}</span>
+          {r.kind === "reverse" && <Tag color="purple">{t("rating.reverse")}</Tag>}
+        </Space>
+      ),
+    },
+    {
+      title: t("rating.category"),
+      dataIndex: "categoryName",
+      key: "categoryName",
+      render: (_: string, r: CraftProfit) => (
+        <Space direction="vertical" size={0}>
+          <span>{r.categoryName}</span>
+          <Text type="secondary" style={{ fontSize: 12 }}>{r.groupName}</Text>
+        </Space>
+      ),
+    },
+    {
+      title: t("rating.sellPrice"),
+      dataIndex: "sellPrice",
+      key: "sellPrice",
+      align: "right",
+      sorter: (a, b) => a.sellPrice - b.sellPrice,
+      render: (_: number, r: CraftProfit) => (
+        <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-end" }}>
+          <span>
+            {formatISK(r.sellPrice)}{" "}
+            {r.sellIsOverride && <Tag color="blue" style={{ marginInlineEnd: 0 }}>{t("rating.yours")}</Tag>}
+          </span>
+          {r.sellIsOverride && (
+            <Text type="secondary" style={{ fontSize: 11 }}>
+              {t("common.marketValue", { value: formatISK(r.sellPriceMarket) })}
+            </Text>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: t("rating.craftCost"),
+      dataIndex: "craftCost",
+      key: "craftCost",
+      align: "right",
+      sorter: (a, b) => a.craftCost - b.craftCost,
+      render: (_: number, r: CraftProfit) => (
+        <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-end" }}>
+          <span>{formatISK(r.craftCost)}</span>
+          {Math.round(r.craftCostMarket) !== Math.round(r.craftCost) && (
+            <Text type="secondary" style={{ fontSize: 11 }}>
+              {t("rating.byMarketValue", { value: formatISK(r.craftCostMarket) })}
+            </Text>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: t("rating.profit"),
+      dataIndex: "profit",
+      key: "profit",
+      align: "right",
+      sorter: (a, b) => a.profit - b.profit,
+      render: (v: number) => (
+        <Text type={v >= 0 ? "success" : "danger"}>{formatISK(v)}</Text>
+      ),
+    },
+    {
+      title: t("rating.margin"),
+      dataIndex: "margin",
+      key: "margin",
+      align: "right",
+      sorter: (a, b) => a.margin - b.margin,
+      render: (v: number) => `${(v * 100).toFixed(1)}%`,
+    },
+    {
+      title: t("rating.time"),
+      dataIndex: "craftTime",
+      key: "craftTime",
+      align: "right",
+      sorter: (a, b) => a.craftTime - b.craftTime,
+      render: (v: number) => formatDuration(v),
+    },
+    {
+      title: t("rating.iskPerHour"),
+      dataIndex: "profitPerHour",
+      key: "profitPerHour",
+      align: "right",
+      defaultSortOrder: "descend",
+      sorter: (a, b) => a.profitPerHour - b.profitPerHour,
+      render: (v: number) => formatISK(v),
+    },
+  ];
+}
 
 export function RatingPage() {
+  const { t } = useTranslation();
+  const columns = useMemo(() => buildColumns(t), [t]);
   const [data, setData] = useState<GameData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -167,7 +178,7 @@ export function RatingPage() {
   if (loading) {
     return (
       <div style={{ textAlign: "center", padding: 80 }}>
-        <Spin size="large" tip="Обчислення рейтингу…">
+        <Spin size="large" tip={t("rating.loading")}>
           <div style={{ padding: 40 }} />
         </Spin>
       </div>
@@ -178,11 +189,11 @@ export function RatingPage() {
     return (
       <Alert
         type="error"
-        message="Не вдалося завантажити дані"
+        message={t("common.loadErrorTitle")}
         description={error}
         action={
           <Button onClick={() => setReloadKey((k) => k + 1)} icon={<ReloadOutlined />}>
-            Повторити
+            {t("common.retry")}
           </Button>
         }
         showIcon
@@ -194,23 +205,19 @@ export function RatingPage() {
     <Card
       title={
         allEnabled
-          ? "Топ-50 найприбутковіших для крафту"
-          : `Топ-50 найприбутковіших — вибрані категорії (${enabledCategories.size}/${categories.length})`
+          ? t("rating.top50")
+          : t("rating.top50Selected", { enabled: enabledCategories.size, total: categories.length })
       }
       extra={
         <Button icon={<ReloadOutlined />} onClick={() => setReloadKey((k) => k + 1)}>
-          Оновити дані
+          {t("common.refreshData")}
         </Button>
       }
     >
-      <Text type="secondary">
-        Вартість крафту рахується «до сировини» на максимальних скілах, із цінами блюпрінтів.
-        Збережені (ваші) ціни мають пріоритет; ринкова (середньотижнева) показується поряд.
-        Клік на рядок — редагувати ціни виробу, інгредієнтів і блюпрінтів.
-      </Text>
+      <Text type="secondary">{t("rating.description")}</Text>
       <div style={{ marginTop: 12 }}>
         <Space size={8} wrap align="center">
-          <Text strong>Категорії:</Text>
+          <Text strong>{t("rating.categories")}</Text>
           {categories.map((c) => (
             <Checkbox
               key={c}
@@ -222,10 +229,10 @@ export function RatingPage() {
           ))}
           <Divider type="vertical" />
           <Button size="small" onClick={() => setDisabledCategories(new Set())}>
-            Усі
+            {t("common.all")}
           </Button>
           <Button size="small" onClick={() => setDisabledCategories(new Set(categories))}>
-            Жодної
+            {t("common.none")}
           </Button>
         </Space>
       </div>

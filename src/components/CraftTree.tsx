@@ -1,4 +1,5 @@
 import { InputNumber, Switch, Table, Tag, Tooltip, Typography } from "antd";
+import { useTranslation } from "react-i18next";
 import type { ColumnsType } from "antd/es/table";
 import type { BuildNode } from "../domain/tree";
 import { formatDuration, formatISK, formatISKExact, formatQuantity } from "../domain/format";
@@ -29,9 +30,10 @@ export function CraftTree({
   marketPrices,
   priceMeta,
 }: Props) {
+  const { t } = useTranslation();
   const columns: ColumnsType<BuildNode> = [
     {
-      title: "Предмет",
+      title: t("tree.item"),
       dataIndex: "name",
       key: "name",
       width: 380,
@@ -43,39 +45,39 @@ export function CraftTree({
           </Text>
           {node.isBlueprint && (
             <Tag color="gold" style={{ marginInlineEnd: 0 }}>
-              блюпрінт
+              {t("tree.blueprint")}
             </Tag>
           )}
           {node.mode === "build" ? (
             node.recipeKind === "reverse" ? (
               <Tag color="purple" style={{ marginInlineEnd: 0 }}>
-                реверс ×{node.runs} (≈{node.attempts.toFixed(1)} спроб)
+                {t("tree.reverseTag", { runs: node.runs, attempts: node.attempts.toFixed(1) })}
               </Tag>
             ) : (
               <Tag color="blue" style={{ marginInlineEnd: 0 }}>
-                крафт ×{node.runs}
+                {t("tree.craftTag", { runs: node.runs })}
               </Tag>
             )
           ) : (
-            <Tag style={{ marginInlineEnd: 0 }}>купити</Tag>
+            <Tag style={{ marginInlineEnd: 0 }}>{t("tree.buyTag")}</Tag>
           )}
           {!node.priceKnown && node.mode === "buy" && (
             <Tag color="orange" style={{ marginInlineEnd: 0 }}>
-              ціна невідома
+              {t("tree.priceUnknown")}
             </Tag>
           )}
         </Space2>
       ),
     },
     {
-      title: "Тип",
+      title: t("tree.type"),
       dataIndex: "type",
       key: "type",
       width: 200,
       render: (v: string) => <Text type="secondary">{v}</Text>,
     },
     {
-      title: "Кількість",
+      title: t("tree.quantity"),
       dataIndex: "quantity",
       key: "quantity",
       align: "right",
@@ -83,7 +85,7 @@ export function CraftTree({
       render: (q: number) => formatQuantity(q),
     },
     {
-      title: "Ціна/од.",
+      title: t("tree.unitPrice"),
       key: "unitPrice",
       align: "right",
       width: 160,
@@ -101,7 +103,12 @@ export function CraftTree({
             />
             {priceOverrides.has(node.itemId) && (
               <Text type="secondary" style={{ fontSize: 11 }}>
-                ринок: {marketPrices.get(node.itemId) != null ? formatISKExact(marketPrices.get(node.itemId)!) : "—"}
+                {t("common.marketValue", {
+                  value:
+                    marketPrices.get(node.itemId) != null
+                      ? formatISKExact(marketPrices.get(node.itemId)!)
+                      : "—",
+                })}
                 <FreshnessDot updatedAt={priceMeta.get(node.itemId)?.updatedAt} />
               </Text>
             )}
@@ -111,14 +118,14 @@ export function CraftTree({
         ),
     },
     {
-      title: "Вартість",
+      title: t("tree.cost"),
       key: "nodeTotal",
       align: "right",
       width: 170,
       render: (_, node) => <Text>{formatISK(node.nodeTotal)}</Text>,
     },
     {
-      title: "Job (вартість / час)",
+      title: t("tree.job"),
       key: "job",
       align: "right",
       width: 200,
@@ -132,7 +139,7 @@ export function CraftTree({
         ),
     },
     {
-      title: "Режим",
+      title: t("tree.mode"),
       key: "toggle",
       width: 120,
       render: (_, node) => {
@@ -141,18 +148,18 @@ export function CraftTree({
           <Tooltip
             title={
               auto
-                ? "Вимкніть авто-оптимізацію для ручного вибору"
+                ? t("tree.toggleAuto")
                 : isRoot
-                  ? "Кінцевий предмет завжди крафтиться"
+                  ? t("tree.toggleRoot")
                   : !node.craftable
-                    ? "Немає рецепта — лише купити"
-                    : "Перемкнути крафт / купити"
+                    ? t("tree.toggleNoRecipe")
+                    : t("tree.toggleSwitch")
             }
           >
             <Switch
               size="small"
-              checkedChildren="крафт"
-              unCheckedChildren="купити"
+              checkedChildren={t("tree.craft")}
+              unCheckedChildren={t("tree.buy")}
               checked={node.mode === "build"}
               disabled={auto || isRoot || !node.craftable}
               onChange={() => onToggleBuild(node.itemId)}
@@ -177,7 +184,7 @@ export function CraftTree({
   );
 }
 
-// невеликий інлайн-флекс, щоб не тягнути Space у кожен рядок із дефолтними відступами
+// Small inline flex to avoid pulling Space into every row with its default gaps.
 function Space2({ children }: { children: React.ReactNode }) {
   return <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>{children}</span>;
 }

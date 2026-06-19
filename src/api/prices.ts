@@ -25,8 +25,8 @@ function getClient(): SupabaseClient {
   return client;
 }
 
-// Оверрайди цін зберігаються ВИКЛЮЧНО в Supabase (таблиця `prices`) — спільне джерело правди.
-// Локального кешу (localStorage) більше немає: без налаштованого Supabase оверрайдів немає.
+// Price overrides are stored EXCLUSIVELY in Supabase (table `prices`) — the shared source of truth.
+// There is no local cache (localStorage) anymore: without configured Supabase there are no overrides.
 export async function fetchPrices(): Promise<PriceMap> {
   if (!pricesConfigured()) return new Map();
   const map: PriceMap = new Map();
@@ -37,7 +37,7 @@ export async function fetchPrices(): Promise<PriceMap> {
       map.set(Number(row.item_id), { price: Number(row.price), updatedAt: row.updated_at });
     }
   } catch {
-    // помилка мережі/запиту — повертаємо порожньо (локального фолбеку немає)
+    // network/request error — return empty (there is no local fallback)
     return new Map();
   }
   return map;

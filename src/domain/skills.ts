@@ -2,11 +2,11 @@ import type { Recipe, Skill } from "../api/types";
 
 export const MAX_SKILL_LEVEL = 5;
 
-export type SkillLevels = Map<string, number>; // назва скіла → рівень 0..5
+export type SkillLevels = Map<string, number>; // skill name → level 0..5
 
 /**
- * Сумарне зниження кількості матеріалів (%) для набору скілів на заданих рівнях.
- * Адитивна модель: % від кожного скіла додаються. Рівень 0 → внесок 0.
+ * Total material-quantity reduction (%) for a set of skills at the given levels.
+ * Additive model: the % of each skill is summed. Level 0 → no contribution.
  */
 export function combineEfficiency(
   skillNames: string[],
@@ -26,8 +26,8 @@ export function combineEfficiency(
 }
 
 /**
- * Сумарний множник часу job для набору скілів на заданих рівнях.
- * Множники з поля `time` (від'ємні) додаються до 1: Π(1 + factor).
+ * Total job-time multiplier for a set of skills at the given levels.
+ * The `time` factors (negative) are added to 1: Π(1 + factor).
  */
 export function combineTimeMultiplier(
   skillNames: string[],
@@ -51,11 +51,11 @@ function maxLevels(skillNames: string[]): SkillLevels {
 }
 
 /**
- * Неперервний коефіцієнт масштабування кількості матеріалів.
+ * Continuous scaling factor for material quantity.
  *
- * Якщо задано ручне перевизначення `meOverride` (%, де 100 = база блюпрінта),
- * скіли більше не впливають на матеріали: фактор = meOverride/100.
- * Інакше — скіл-залежний `skillEfficiencyFactor`.
+ * If a manual override `meOverride` is given (%, where 100 = blueprint base),
+ * skills no longer affect materials: factor = meOverride/100.
+ * Otherwise the skill-dependent `skillEfficiencyFactor` is used.
  */
 export function materialFactor(
   recipe: Recipe,
@@ -68,14 +68,14 @@ export function materialFactor(
 }
 
 /**
- * Ефективна кількість матеріалу з урахуванням рівнів скілів.
+ * Effective material quantity accounting for skill levels.
  *
- * Кількість у блюпрінті задана для МАКСИМАЛЬНИХ скілів, тому масштабуємо
- * відносно максимуму:
+ * Blueprint quantities are given for MAX skills, so we scale relative to the
+ * maximum:
  *   qty(levels) = ceil( qtyBp × (1 − effCur/100) / (1 − effMax/100) )
- * На рівні 5 усіх скілів повертає рівно qtyBp.
+ * At level 5 of every skill it returns exactly qtyBp.
  *
- * `meOverride` (%, опціонально) перекриває скіли: база блюпрінта = 100%.
+ * `meOverride` (%, optional) overrides skills: blueprint base = 100%.
  */
 export function effectiveQuantity(
   baseQuantity: number,
@@ -88,8 +88,8 @@ export function effectiveQuantity(
 }
 
 /**
- * Неперервний коефіцієнт масштабування кількості (без округлення).
- * Потрібен оптимізатору для порівняння вартостей. На макс рівні = 1.
+ * Continuous quantity scaling factor (without rounding).
+ * Needed by the optimizer to compare costs. At max level = 1.
  */
 export function skillEfficiencyFactor(
   recipe: Recipe,
@@ -99,13 +99,13 @@ export function skillEfficiencyFactor(
   const effCur = combineEfficiency(recipe.skills, levels, skillByName);
   const effMax = combineEfficiency(recipe.skills, maxLevels(recipe.skills), skillByName);
   const denom = 1 - effMax / 100;
-  if (denom <= 0) return 1; // захист від ділення на ~0
+  if (denom <= 0) return 1; // guard against division by ~0
   return (1 - effCur / 100) / denom;
 }
 
 /**
- * Ефективний час job (секунди) з урахуванням рівнів скілів.
- * Час у блюпрінті — для максимальних скілів, тому масштабуємо так само.
+ * Effective job time (seconds) accounting for skill levels.
+ * Blueprint time is for max skills, so we scale it the same way.
  */
 export function effectiveTime(
   recipe: Recipe,

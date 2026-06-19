@@ -1,4 +1,5 @@
 import { Button, Empty, InputNumber, Slider, Space, Tooltip, Typography } from "antd";
+import { useTranslation } from "react-i18next";
 import type { GameData } from "../api/types";
 import { MAX_SKILL_LEVEL } from "../domain/skills";
 
@@ -16,7 +17,7 @@ interface Props {
   onCapComponentCostReductionChange: (pct: number) => void;
 }
 
-/** Слайдери рівнів (0..5) для скілів + ручне перевизначення ефективності матеріалів. */
+/** Level sliders (0..5) for skills + manual material-efficiency override. */
 export function SkillsPanel({
   data,
   relevantSkills,
@@ -28,6 +29,7 @@ export function SkillsPanel({
   capComponentCostReduction,
   onCapComponentCostReductionChange,
 }: Props) {
+  const { t } = useTranslation();
   const meActive = materialEfficiency != null;
 
   return (
@@ -35,8 +37,8 @@ export function SkillsPanel({
       <div>
         <Space style={{ justifyContent: "space-between", width: "100%" }}>
           <Text>
-            Ефективність матеріалів{" "}
-            <Tooltip title="Значення блюпрінта = 100%. Задане число перекриває скіли для КІЛЬКОСТІ матеріалів (50 = вдвічі менше, 150 = в 1.5× більше). Час job далі рахується за скілами.">
+            {t("skills.materialEfficiency")}{" "}
+            <Tooltip title={t("skills.materialEfficiencyTooltip")}>
               <Text type="secondary" style={{ cursor: "help" }}>
                 ⓘ
               </Text>
@@ -44,7 +46,7 @@ export function SkillsPanel({
           </Text>
           {meActive && (
             <Button size="small" type="text" onClick={() => onMaterialEfficiencyChange(null)}>
-              За скілами ✕
+              {t("skills.bySkillsReset")}
             </Button>
           )}
         </Space>
@@ -54,7 +56,7 @@ export function SkillsPanel({
           max={150}
           step={1}
           value={materialEfficiency}
-          placeholder="За скілами (вимкнено)"
+          placeholder={t("skills.bySkillsPlaceholder")}
           addonAfter="%"
           onChange={(v) => onMaterialEfficiencyChange(v ?? null)}
         />
@@ -62,8 +64,8 @@ export function SkillsPanel({
 
       <div>
         <Text>
-          Знижка вартості job для Capital Components{" "}
-          <Tooltip title="Зниження ISK-вартості виробництва капітальних компонентів (Capital Construction Components) — напр. від скілів Production Optimization. 0% = без знижки.">
+          {t("skills.capDiscount")}{" "}
+          <Tooltip title={t("skills.capDiscountTooltip")}>
             <Text type="secondary" style={{ cursor: "help" }}>
               ⓘ
             </Text>
@@ -81,12 +83,12 @@ export function SkillsPanel({
       </div>
 
       {relevantSkills.length === 0 ? (
-        <Empty description="Немає скілів для цього предмета" />
+        <Empty description={t("skills.noSkills")} />
       ) : (
         <>
           <div style={{ textAlign: "right" }}>
             <Button size="small" onClick={onReset}>
-              Усі на макс (5)
+              {t("skills.allMax")}
             </Button>
           </div>
           {relevantSkills.map((name) => {
@@ -97,9 +99,7 @@ export function SkillsPanel({
               <div key={name} style={{ opacity: meActive ? 0.5 : 1 }}>
                 <Space style={{ justifyContent: "space-between", width: "100%" }}>
                   <Text>{name}</Text>
-                  <Text type="secondary">
-                    рів. {level} · −{eff}% матеріалів
-                  </Text>
+                  <Text type="secondary">{t("skills.levelInfo", { level, eff })}</Text>
                 </Space>
                 <Slider
                   min={0}

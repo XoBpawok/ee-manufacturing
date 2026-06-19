@@ -1,5 +1,6 @@
 import { Select } from "antd";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import type { GameData } from "../api/types";
 
 interface Props {
@@ -8,8 +9,9 @@ interface Props {
   onChange: (id: number) => void;
 }
 
-/** Пошуковий вибір craftable-предмета (лише ті, що мають блюпрінт). */
+/** Searchable picker of craftable items (only those that have a blueprint). */
 export function ItemSelector({ data, value, onChange }: Props) {
+  const { t } = useTranslation();
   const options = useMemo(() => {
     return data.craftables.map((it) => ({
       value: it.id,
@@ -24,7 +26,7 @@ export function ItemSelector({ data, value, onChange }: Props) {
       value={value}
       onChange={onChange}
       options={options}
-      placeholder="Виберіть предмет"
+      placeholder={t("selector.placeholder")}
       filterOption={(input, option) =>
         (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
       }

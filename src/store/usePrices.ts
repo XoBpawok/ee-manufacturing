@@ -11,9 +11,9 @@ export interface PricesState {
 
 const UPSERT_DEBOUNCE_MS = 500;
 
-// Очікувано існує кілька незалежних інстансів usePrices() одночасно (сторінка калькулятора
-// й сторінка рейтингу) — таблиця `prices` у Supabase є спільним джерелом правди; кожен інстанс
-// підвантажує дані при монтуванні, тому стан синхронізується через сервер, а не між інстансами напряму.
+// Several independent usePrices() instances are expected to exist at once (the calculator
+// page and the rating page) — the `prices` table in Supabase is the shared source of truth;
+// each instance loads data on mount, so state is synced through the server, not directly between instances.
 export function usePrices(): PricesState {
   const [priceMeta, setPriceMeta] = useState<Map<number, PriceEntry>>(new Map());
   const [pricesLoading, setPricesLoading] = useState(true);
@@ -36,12 +36,12 @@ export function usePrices(): PricesState {
   }, []);
 
   const setPriceOverride = useCallback((itemId: number, price: number) => {
-    // оптимістичне оновлення — миттєво, синхронно
+    // optimistic update — immediate, synchronous
     const optimistic: PriceEntry = { price, updatedAt: new Date().toISOString() };
     setPriceMeta((prev) => new Map(prev).set(itemId, optimistic));
 
-    // дебаунс мережевого запису в Supabase: InputNumber.onChange стріляє щоразу при наборі
-    // символу, а таблиця prices — спільна, тож пишемо туди не частіше ніж раз на ~500мс на itemId
+    // debounce the network write to Supabase: InputNumber.onChange fires on every typed
+    // character, and the prices table is shared, so we write at most once per ~500ms per itemId
     const existing = pendingTimers.current.get(itemId);
     if (existing) clearTimeout(existing);
     const timer = setTimeout(() => {
@@ -50,7 +50,7 @@ export function usePrices(): PricesState {
         .then((entry) => {
           setPriceMeta((prev) => {
             const current = prev.get(itemId);
-            // захист від запізнілої відповіді: не перезаписуємо новіший локальний стан старішим
+            // guard against a late response: do not overwrite newer local state with older
             if (current && entry.updatedAt < current.updatedAt) return prev;
             return new Map(prev).set(itemId, entry);
           });

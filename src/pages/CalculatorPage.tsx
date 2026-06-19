@@ -18,17 +18,19 @@ import { SkillsPanel } from "../components/SkillsPanel";
 import { CraftTree } from "../components/CraftTree";
 import { SummaryPanel } from "../components/SummaryPanel";
 import { useCalculator } from "../store/useCalculator";
+import { useTranslation } from "react-i18next";
 
 const { Text } = Typography;
 
 export function CalculatorPage() {
   const calc = useCalculator();
+  const { t } = useTranslation();
 
   return (
     <>
       {calc.loading && (
         <div style={{ textAlign: "center", padding: 80 }}>
-          <Spin size="large" tip="Завантаження даних гри…">
+          <Spin size="large" tip={t("calc.loading")}>
             <div style={{ padding: 40 }} />
           </Spin>
         </div>
@@ -37,11 +39,11 @@ export function CalculatorPage() {
       {calc.error && (
         <Alert
           type="error"
-          message="Не вдалося завантажити дані"
+          message={t("common.loadErrorTitle")}
           description={calc.error}
           action={
             <Button onClick={calc.refresh} icon={<ReloadOutlined />}>
-              Повторити
+              {t("common.retry")}
             </Button>
           }
           showIcon
@@ -53,7 +55,7 @@ export function CalculatorPage() {
           <Card size="small">
             <Space wrap align="center" size="large">
               <Space direction="vertical" size={2}>
-                <Text type="secondary">Предмет</Text>
+                <Text type="secondary">{t("calc.item")}</Text>
                 <ItemSelector
                   data={calc.data}
                   value={calc.rootItemId}
@@ -61,7 +63,7 @@ export function CalculatorPage() {
                 />
               </Space>
               <Space direction="vertical" size={2}>
-                <Text type="secondary">Кількість</Text>
+                <Text type="secondary">{t("calc.quantity")}</Text>
                 <InputNumber
                   min={1}
                   value={calc.desiredQty}
@@ -70,29 +72,29 @@ export function CalculatorPage() {
               </Space>
               <Space direction="vertical" size={2}>
                 <Text type="secondary">
-                  <ThunderboltOutlined /> Авто-оптимізація
+                  <ThunderboltOutlined /> {t("calc.autoOptimize")}
                 </Text>
-                <Tooltip title="Автоматично вибирати дешевше: купити чи крафтити (включно з реверс-інжинірингом) для кожного компонента">
+                <Tooltip title={t("calc.autoTooltip")}>
                   <Switch
                     checked={calc.auto}
                     onChange={calc.setAuto}
-                    checkedChildren="авто"
-                    unCheckedChildren="вручну"
+                    checkedChildren={t("calc.auto")}
+                    unCheckedChildren={t("calc.manual")}
                   />
                 </Tooltip>
               </Space>
               <Button icon={<ReloadOutlined />} onClick={calc.refresh}>
-                Оновити дані
+                {t("common.refreshData")}
               </Button>
             </Space>
           </Card>
 
           {!calc.tree || !calc.summary ? (
-            <Alert type="warning" showIcon message="Для цього предмета немає блюпрінта" />
+            <Alert type="warning" showIcon message={t("calc.noBlueprint")} />
           ) : (
             <Row gutter={[16, 16]}>
               <Col xs={24} xl={6}>
-                <Card title="Скіли індустрії" size="small">
+                <Card title={t("calc.skillsTitle")} size="small">
                   <SkillsPanel
                     data={calc.data}
                     relevantSkills={calc.summary.relevantSkills}
@@ -119,7 +121,7 @@ export function CalculatorPage() {
                     items={[
                       {
                         key: "tree",
-                        label: "Дерево крафту",
+                        label: t("calc.craftTree"),
                         children: (
                           <CraftTree
                             tree={calc.tree}

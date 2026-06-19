@@ -9,26 +9,26 @@ export interface CraftProfit {
   groupName: string;
   kind: RecipeKind;
   iconUrl?: string;
-  sellPrice: number; // ринкова ціна предмета (або override)
-  sellPriceMarket: number; // ринкова ціна продукту (estimated_price)
-  sellIsOverride: boolean; // чи ціна продажу — це override користувача
-  craftCost: number; // повна вартість крафту до сировини, за одиницю
-  craftCostMarket: number; // вартість крафту лише за ринковими цінами (без override'ів)
+  sellPrice: number; // market price of the item (or override)
+  sellPriceMarket: number; // market price of the product (estimated_price)
+  sellIsOverride: boolean; // whether the sell price is a user override
+  craftCost: number; // full craft cost down to raw materials, per unit
+  craftCostMarket: number; // craft cost using market prices only (no overrides)
   profit: number; // sellPrice − craftCost
-  margin: number; // profit / craftCost (частка; craftCost>0)
-  craftTime: number; // секунди, рекурсивно весь ланцюг, за одиницю
+  margin: number; // profit / craftCost (fraction; craftCost>0)
+  craftTime: number; // seconds, recursively the whole chain, per unit
   profitPerHour: number; // profit / (craftTime/3600); craftTime>0
 }
 
 export interface RatingParams {
   data: GameData;
   priceOverrides: Map<number, number>;
-  levels: SkillLevels; // базис скілів (порожня мапа = макс рівні)
-  limit?: number; // скільки повернути (default 50)
-  enabledCategories?: Set<string>; // якщо задано — лише ці категорії (undefined = всі)
+  levels: SkillLevels; // skill basis (empty map = max levels)
+  limit?: number; // how many to return (default 50)
+  enabledCategories?: Set<string>; // if set — only these categories (undefined = all)
 }
 
-/** Відсортований унікальний список категорій усіх рецептів (для перемикачів фільтра). */
+/** Sorted unique list of categories across all recipes (for the filter toggles). */
 export function recipeCategories(data: GameData): string[] {
   const set = new Set<string>();
   for (const recipe of data.recipeByItemId.values()) set.add(recipe.categoryName);
@@ -36,19 +36,19 @@ export function recipeCategories(data: GameData): string[] {
 }
 
 interface UnitCT {
-  cost: number; // вартість за одиницю
-  costMarket: number; // вартість за одиницю лише за ринковими цінами
-  time: number; // секунди за одиницю
-  known: boolean; // чи відомі всі ціни в ланцюгу
+  cost: number; // cost per unit
+  costMarket: number; // cost per unit using market prices only
+  time: number; // seconds per unit
+  known: boolean; // whether all prices in the chain are known
 }
 
 /**
- * Ранжує craftable-предмети за вигідністю крафту «до сировини».
+ * Ranks craftable items by craft profitability "down to raw materials".
  *
- * Вартість/час рахуються рекурсивно: будь-який craftable-матеріал завжди
- * будується, купується лише сировина без рецепту. Формула на одиницю дзеркалить
+ * Cost/time are computed recursively: any craftable material is always built,
+ * only raw materials without a recipe are bought. The per-unit formula mirrors
  * domain/optimize.ts: (manufactureCost + Σ child×qty) / (outputNumber × passRate).
- * Базис скілів — максимальні рівні (materialFactor=1), тож кількості/час блюпрінта.
+ * The skill basis is max levels (materialFactor=1), i.e. blueprint quantities/time.
  */
 export function rankCraftProfits(params: RatingParams): CraftProfit[] {
   const { data, priceOverrides, levels, limit = 50, enabledCategories } = params;
@@ -66,7 +66,7 @@ export function rankCraftProfits(params: RatingParams): CraftProfit[] {
     const cached = memo.get(itemId);
     if (cached) return cached;
     const recipe = data.recipeByItemId.get(itemId);
-    // Лист (нема рецепту) або цикл — купуємо.
+    // Leaf (no recipe) or cycle — buy.
     if (!recipe || inProgress.has(itemId)) {
       const p = buyPrice(itemId);
       const pm = marketPrice(itemId);
@@ -89,8 +89,8 @@ export function rankCraftProfits(params: RatingParams): CraftProfit[] {
       materialsTime += child.time * perUnit;
     }
     inProgress.delete(itemId);
-    // Реверс блюпрінтів не споживає (виробляє їх), тож для kind === "reverse"
-    // ціну власного блюпрінта не нараховуємо.
+    // Reverse does not consume blueprints (it produces them), so for kind === "reverse"
+    // we do not charge the cost of its own blueprint.
     const blueprintCost = recipe.kind === "reverse" ? 0 : buyPrice(recipe.blueprintId) ?? 0;
     const blueprintCostMarket =
       recipe.kind === "reverse" ? 0 : marketPrice(recipe.blueprintId) ?? 0;

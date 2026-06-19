@@ -74,7 +74,7 @@ describe("rankCraftProfits", () => {
       itemId: 1, manufactureCost: 1000,
       materials: [{ id: 2, name: "Raw", type: "Mineral", quantity: 2 }],
     });
-    // id2 не має ні рецепту, ні ціни → known=false
+    // id2 has neither a recipe nor a price → known=false
     const data = gameData([widget], [[1, 5000]]);
     const rows = rankCraftProfits({ data, priceOverrides: noOverrides, levels: noLevels });
     expect(rows.find((r) => r.itemId === 1)).toBeUndefined();
@@ -89,7 +89,7 @@ describe("rankCraftProfits", () => {
       itemId: 2, manufactureCost: 0, manufactureTime: 3600,
       materials: [{ id: 9, name: "R", type: "Mineral", quantity: 1 }],
     });
-    // обидва: cost=10, time=3600(1год); profit lo=90, hi=990 → hi вище
+    // both: cost=10, time=3600(1h); profit lo=90, hi=990 → hi is higher
     const data = gameData([lo, hi], [[1, 100], [2, 1000], [9, 10]]);
     const rows = rankCraftProfits({ data, priceOverrides: noOverrides, levels: noLevels, limit: 1 });
     expect(rows).toHaveLength(1);
@@ -102,7 +102,7 @@ describe("rankCraftProfits", () => {
       materials: [{ id: 2, name: "Raw", type: "Mineral", quantity: 1 }],
     });
     const data = gameData([widget], [[1, 5000], [2, 100]]);
-    const overrides = new Map<number, number>([[2, 1]]); // здешевлюємо сировину
+    const overrides = new Map<number, number>([[2, 1]]); // make the raw material cheaper
     const [row] = rankCraftProfits({ data, priceOverrides: overrides, levels: noLevels });
     expect(row.craftCost).toBe(1); // (0 + 1×1)/1
   });
@@ -125,7 +125,7 @@ describe("rankCraftProfits", () => {
     });
     const data = gameData([re], [[5, 5000], [6, 100], [905, 50]]);
     const [row] = rankCraftProfits({ data, priceOverrides: noOverrides, levels: noLevels });
-    // cost = (100 + 0 + 100×1)/(1×0.5) = 400 — ціна блюпрінта 905 НЕ враховується для реверсу
+    // cost = (100 + 0 + 100×1)/(1×0.5) = 400 — blueprint price 905 is NOT counted for reverse
     expect(row.craftCost).toBe(400);
   });
 
@@ -134,9 +134,9 @@ describe("rankCraftProfits", () => {
       itemId: 1, blueprintId: 901, manufactureCost: 1000,
       materials: [{ id: 2, name: "Raw", type: "Mineral", quantity: 2 }],
     });
-    const data = gameData([widget], [[1, 5000], [2, 100]]); // 901 без ціни
+    const data = gameData([widget], [[1, 5000], [2, 100]]); // 901 has no price
     const [row] = rankCraftProfits({ data, priceOverrides: noOverrides, levels: noLevels });
-    expect(row.craftCost).toBe(1200); // блюпрінт = 0
+    expect(row.craftCost).toBe(1200); // blueprint = 0
   });
 
   it("override ціни блюпрінта застосовується; craftCostMarket лишається ринковим", () => {
@@ -148,7 +148,7 @@ describe("rankCraftProfits", () => {
     const overrides = new Map<number, number>([[901, 50]]);
     const [row] = rankCraftProfits({ data, priceOverrides: overrides, levels: noLevels });
     expect(row.craftCost).toBe(150); // (0 + 50 + 100)/1
-    expect(row.craftCostMarket).toBe(400); // (0 + 300 + 100)/1 за ринком
+    expect(row.craftCostMarket).toBe(400); // (0 + 300 + 100)/1 at market
   });
 
   it("sellPriceMarket і sellIsOverride відображають override продукту", () => {
@@ -169,7 +169,7 @@ describe("rankCraftProfits", () => {
       itemId: 1, categoryName: "Ship", manufactureCost: 0, manufactureTime: 3600,
       materials: [{ id: 9, name: "R", type: "Mineral", quantity: 1 }],
     });
-    // прибутковіший за ship, але інша категорія
+    // more profitable than ship, but a different category
     const module = mk({
       itemId: 2, categoryName: "Module", manufactureCost: 0, manufactureTime: 3600,
       materials: [{ id: 9, name: "R", type: "Mineral", quantity: 1 }],

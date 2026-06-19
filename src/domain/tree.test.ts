@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { GameData, Recipe, Skill } from "../api/types";
 import { buildTree, summarizeTree, fullBuildSet, CAPITAL_COMPONENT_TYPE, type TreeParams } from "./tree";
 
-// Дерево: Ship(1) ← 2× Component(2) ← 10× Mineral(3, не craftable)
+// Tree: Ship(1) ← 2× Component(2) ← 10× Mineral(3, not craftable)
 export function makeData(): GameData {
   const skillByName = new Map<string, Skill>([
     ["S", { name: "S", efficiency: [0, 0, 0, 0, 0], time: [0, 0, 0, 0, 0] }],
@@ -55,8 +55,8 @@ describe("buildTree + summarizeTree", () => {
     expect(comp.buyCost).toBe(2 * 500);
 
     const sum = summarizeTree(tree, params);
-    expect(sum.totalJobCost).toBe(1000); // лише job корабля
-    expect(sum.totalBuyCost).toBe(1000); // 2 компоненти × 500
+    expect(sum.totalJobCost).toBe(1000); // ship job only
+    expect(sum.totalBuyCost).toBe(1000); // 2 components × 500
     expect(sum.grandTotal).toBe(2000);
     expect(sum.buyFinishedCost).toBe(99999);
   });
@@ -66,7 +66,7 @@ describe("buildTree + summarizeTree", () => {
     const tree = buildTree(params);
     const comp = tree.children[0];
     expect(comp.mode).toBe("build");
-    expect(comp.runs).toBe(2); // 2 компоненти, output 1
+    expect(comp.runs).toBe(2); // 2 components, output 1
     expect(comp.children).toHaveLength(1);
     const mineral = comp.children[0];
     expect(mineral.mode).toBe("buy");
@@ -74,8 +74,8 @@ describe("buildTree + summarizeTree", () => {
     expect(mineral.quantity).toBe(20); // 10 × 2 runs
 
     const sum = summarizeTree(tree, params);
-    expect(sum.totalBuyCost).toBe(20 * 5); // лише мінерали
-    expect(sum.totalJobCost).toBe(1000 + 50 * 2); // корабель + 2 job компонента
+    expect(sum.totalBuyCost).toBe(20 * 5); // minerals only
+    expect(sum.totalJobCost).toBe(1000 + 50 * 2); // ship + 2 component jobs
     expect(sum.shoppingList).toHaveLength(1);
     expect(sum.shoppingList[0].name).toBe("Mineral");
   });
@@ -138,8 +138,8 @@ describe("capComponentCostReduction", () => {
     const tree = buildTree(capParams(20));
     const comp = tree.children[0];
     expect(comp.type).toBe(CAPITAL_COMPONENT_TYPE);
-    expect(comp.jobCost).toBe(50 * 2 * 0.8); // 80 (було 100)
-    expect(tree.jobCost).toBe(1000); // root (type=Ship) без знижки
+    expect(comp.jobCost).toBe(50 * 2 * 0.8); // 80 (was 100)
+    expect(tree.jobCost).toBe(1000); // root (type=Ship) without discount
 
     const sum = summarizeTree(tree, capParams(20));
     expect(sum.totalJobCost).toBe(1000 + 80);
@@ -154,20 +154,20 @@ describe("capComponentCostReduction", () => {
     const tree = buildTree(capParams(100));
     const comp = tree.children[0];
     expect(comp.jobCost).toBe(0);
-    expect(comp.nodeTotal).toBe(comp.children[0].buyCost); // лишається тільки вартість мінералів
+    expect(comp.nodeTotal).toBe(comp.children[0].buyCost); // only the minerals cost remains
   });
 
   it("клампить значення поза діапазоном 0–100", () => {
-    expect(buildTree(capParams(-10)).children[0].jobCost).toBe(50 * 2); // <0 → 0% знижки
-    expect(buildTree(capParams(150)).children[0].jobCost).toBe(0); // >100 → 100% знижки
+    expect(buildTree(capParams(-10)).children[0].jobCost).toBe(50 * 2); // <0 → 0% discount
+    expect(buildTree(capParams(150)).children[0].jobCost).toBe(0); // >100 → 100% discount
   });
 
   it("знижка capComponent не зачіпає вартість блюпрінта", () => {
     const params = { ...capParams(50), priceOverrides: new Map<number, number>([[9002, 100]]) };
     const comp = buildTree(params).children[0];
-    expect(comp.jobCost).toBe(50 * 2 * 0.5); // 50 — job зі знижкою
+    expect(comp.jobCost).toBe(50 * 2 * 0.5); // 50 — discounted job
     const compBp = comp.children.find((c) => c.isBlueprint)!;
-    expect(compBp.buyCost).toBe(100 * 2); // 200 — блюпрінт без знижки (окремий buy-вузол)
+    expect(compBp.buyCost).toBe(100 * 2); // 200 — blueprint without discount (separate buy node)
   });
 });
 
@@ -187,14 +187,14 @@ describe("blueprint cost (некрафтований блюпрінт)", () => {
     const comp = tree.children.find((c) => c.itemId === 2)!;
     const compBp = comp.children.find((c) => c.isBlueprint)!;
     expect(compBp.buyCost).toBe(100 * 2); // 2 runs
-    // root nodeTotal = усі діти (включно з блюпрінтом) + jobCost
+    // root nodeTotal = all children (including the blueprint) + jobCost
     const childrenTotal = tree.children.reduce((s, c) => s + c.nodeTotal, 0);
     expect(tree.nodeTotal).toBe(childrenTotal + tree.jobCost);
 
     const sum = summarizeTree(tree, params);
     expect(sum.totalBlueprintCost).toBe(1000 + 200);
     expect(sum.grandTotal).toBe(sum.totalBuyCost + sum.totalJobCost + sum.totalBlueprintCost);
-    // куплені блюпрінти не потрапляють у список матеріалів
+    // bought blueprints do not appear in the material list
     expect(sum.shoppingList.some((m) => m.itemId === 9001 || m.itemId === 9002)).toBe(false);
   });
 
@@ -206,14 +206,14 @@ describe("blueprint cost (некрафтований блюпрінт)", () => {
 
   it("fullBuildSet збирає всі craftable у піддереві (без блюпрінтів)", () => {
     const set = fullBuildSet(makeData(), 1);
-    expect(set.has(2)).toBe(true); // компонент craftable
-    expect(set.has(3)).toBe(false); // мінерал не craftable
+    expect(set.has(2)).toBe(true); // component is craftable
+    expect(set.has(3)).toBe(false); // mineral is not craftable
   });
 });
 
 describe("blueprint craft (craftable блюпрінт через реверс)", () => {
-  // Ship(1) ← 2× Component(2); Ship споживає Ship Blueprint(60), який сам
-  // виробляється реверсом із Datacore(4). Component blueprint(9002) — некрафтований.
+  // Ship(1) ← 2× Component(2); Ship consumes Ship Blueprint(60), which is itself
+  // produced by reverse from Datacore(4). Component blueprint(9002) is not craftable.
   function makeBpData(): GameData {
     const skillByName = new Map<string, Skill>();
     const shipBp: Recipe = {
@@ -257,7 +257,7 @@ describe("blueprint craft (craftable блюпрінт через реверс)",
 
     const sum = summarizeTree(tree, params);
     expect(sum.totalBlueprintCost).toBe(2000);
-    expect(sum.totalBuyCost).toBe(2 * 500); // лише компонент, без блюпрінта
+    expect(sum.totalBuyCost).toBe(2 * 500); // component only, without the blueprint
     expect(sum.totalJobCost).toBe(1000);
     expect(sum.grandTotal).toBe(1000 + 2000 + 1000);
   });
@@ -271,18 +271,18 @@ describe("blueprint craft (craftable блюпрінт через реверс)",
     expect(bp.runs).toBe(1);
     expect(bp.attempts).toBe(2); // 1 / 0.5
     expect(bp.jobCost).toBe(30 * 2); // 60
-    // реверс-вузол блюпрінта не має власного дочірнього блюпрінта
+    // the blueprint's reverse node has no blueprint child of its own
     expect(bp.children.some((c) => c.isBlueprint)).toBe(false);
     const datacore = bp.children[0];
     expect(datacore.itemId).toBe(4);
-    expect(datacore.quantity).toBe(2); // ceil(1 × 2 спроби)
+    expect(datacore.quantity).toBe(2); // ceil(1 × 2 attempts)
     expect(datacore.buyCost).toBe(20);
     expect(bp.nodeTotal).toBe(20 + 60);
 
     const sum = summarizeTree(tree, params);
-    expect(sum.totalBlueprintCost).toBe(0); // блюпрінт будується, не купується
-    expect(sum.totalBuyCost).toBe(2 * 500 + 20); // компонент + датакор
-    expect(sum.totalJobCost).toBe(1000 + 60); // корабель + реверс блюпрінта
+    expect(sum.totalBlueprintCost).toBe(0); // the blueprint is built, not bought
+    expect(sum.totalBuyCost).toBe(2 * 500 + 20); // component + datacore
+    expect(sum.totalJobCost).toBe(1000 + 60); // ship + blueprint reverse
     expect(sum.grandTotal).toBe(sum.totalBuyCost + sum.totalJobCost + sum.totalBlueprintCost);
   });
 
@@ -291,7 +291,7 @@ describe("blueprint craft (craftable блюпрінт через реверс)",
     const tree = buildTree(params);
     expect(tree.recipeKind).toBe("reverse");
     expect(tree.children.every((c) => !c.isBlueprint)).toBe(true);
-    // nodeTotal = датакор (buy) + jobCost; ринкова ціна блюпрінта (2000) НЕ додається
+    // nodeTotal = datacore (buy) + jobCost; the blueprint's market price (2000) is NOT added
     expect(tree.nodeTotal).toBe(tree.children[0].buyCost + tree.jobCost);
   });
 });
