@@ -35,7 +35,9 @@ function readCache(): PriceMap {
     for (const [k, v] of Object.entries(prices)) {
       map.set(Number(k), {
         price: Number(v),
-        updatedAt: meta[k] ?? new Date(0).toISOString(),
+        // немає мета-таймстемпу (старий localStorage-override до фічі шаред-цін) —
+        // ставимо "зараз", щоб не показувати хибну тривожно-червону позначку "оновлено N днів тому"
+        updatedAt: meta[k] ?? new Date().toISOString(),
       });
     }
   } catch {
