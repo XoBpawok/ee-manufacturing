@@ -111,8 +111,8 @@ export function CalculatorPage() {
                   <SummaryPanel
                     summary={calc.summary}
                     onPriceChange={calc.setPriceOverride}
-                    onResetPrices={calc.resetPriceOverrides}
                     priceOverrides={calc.priceOverrides}
+                    priceMeta={calc.priceMeta}
                     marketPrices={calc.data.priceByItemId}
                   />
                   <Collapse

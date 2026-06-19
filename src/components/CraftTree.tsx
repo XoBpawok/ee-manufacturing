@@ -11,7 +11,7 @@ interface Props {
   rootItemId: number;
   auto: boolean;
   onToggleBuild: (itemId: number) => void;
-  onPriceChange: (itemId: number, price: number | null) => void;
+  onPriceChange: (itemId: number, price: number) => void;
 }
 
 export function CraftTree({ tree, rootItemId, auto, onToggleBuild, onPriceChange }: Props) {
@@ -82,7 +82,7 @@ export function CraftTree({ tree, rootItemId, auto, onToggleBuild, onPriceChange
             style={{ width: 140 }}
             formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, " ")}
             parser={(v) => Number((v ?? "").replace(/\s/g, "")) as number}
-            onChange={(v) => onPriceChange(node.itemId, v == null ? null : Number(v))}
+            onChange={(v) => v != null && onPriceChange(node.itemId, Number(v))}
           />
         ) : (
           <Text type="secondary">—</Text>
