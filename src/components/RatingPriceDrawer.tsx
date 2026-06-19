@@ -114,6 +114,7 @@ export function RatingPriceDrawer({
 
           <SummaryPanel
             summary={summary}
+            rootItemId={itemId ?? 0}
             onPriceChange={onPriceChange}
             priceOverrides={priceOverrides}
             priceMeta={priceMeta}

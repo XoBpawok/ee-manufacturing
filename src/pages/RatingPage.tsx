@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Button, Card, Checkbox, Divider, Space, Spin, Table, Tag, Typography } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import type { ColumnsType } from "antd/es/table";
@@ -24,7 +25,13 @@ function buildColumns(t: TFunction): ColumnsType<CraftProfit> {
       render: (_: string, r: CraftProfit) => (
         <Space>
           <ItemIcon src={r.iconUrl} />
-          <span>{r.name}</span>
+          <Link
+            to={`/?item=${r.itemId}`}
+            title={t("rating.openInCalculator")}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {r.name}
+          </Link>
           {r.kind === "reverse" && <Tag color="purple">{t("rating.reverse")}</Tag>}
         </Space>
       ),

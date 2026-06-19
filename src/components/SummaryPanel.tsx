@@ -16,6 +16,7 @@ const { Text } = Typography;
 
 interface Props {
   summary: TreeSummary;
+  rootItemId: number;
   onPriceChange: (itemId: number, price: number) => void;
   priceOverrides: Map<number, number>;
   priceMeta: Map<number, PriceEntry>;
@@ -24,12 +25,19 @@ interface Props {
 
 export function SummaryPanel({
   summary,
+  rootItemId,
   onPriceChange,
   priceOverrides,
   priceMeta,
   marketPrices,
 }: Props) {
   const { t } = useTranslation();
+
+  // Finished item price, editable like any material override.
+  const finishedOverridden = priceOverrides.has(rootItemId);
+  const finishedMarket = marketPrices.get(rootItemId);
+  const finishedUnitPrice = priceOverrides.get(rootItemId) ?? finishedMarket ?? 0;
+  const finishedPriceKnown = finishedOverridden || finishedMarket != null;
   const savings =
     summary.buyFinishedCost != null ? summary.buyFinishedCost - summary.grandTotal : null;
 
@@ -189,6 +197,29 @@ export function SummaryPanel({
               value={summary.buyFinishedCost != null ? Math.round(summary.buyFinishedCost) : "—"}
               suffix={summary.buyFinishedCost != null ? "ISK" : ""}
             />
+            <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 2 }}>
+              <Text type="secondary" style={{ fontSize: 11 }}>
+                {t("summary.finishedUnitPrice")}
+              </Text>
+              <InputNumber
+                size="small"
+                value={finishedUnitPrice}
+                min={0}
+                style={{ width: "100%" }}
+                status={finishedPriceKnown ? undefined : "warning"}
+                formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, " ")}
+                parser={(v) => Number((v ?? "").replace(/\s/g, "")) as number}
+                onChange={(v) => v != null && onPriceChange(rootItemId, Number(v))}
+              />
+              {finishedOverridden && (
+                <Text type="secondary" style={{ fontSize: 11 }}>
+                  {t("common.marketValue", {
+                    value: finishedMarket != null ? formatISKExact(finishedMarket) : "—",
+                  })}
+                  <FreshnessDot updatedAt={priceMeta.get(rootItemId)?.updatedAt} />
+                </Text>
+              )}
+            </div>
           </Card>
         </Col>
         <Col xs={12} md={6}>

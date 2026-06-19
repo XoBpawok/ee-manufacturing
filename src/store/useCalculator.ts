@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { loadGameData } from "../api/client";
 import type { GameData } from "../api/types";
 import { buildTree, summarizeTree, type BuildNode, type TreeSummary } from "../domain/tree";
@@ -97,7 +98,13 @@ export function useCalculator(): Calculator {
     error: null,
   });
 
-  const [rootItemId, setRootItemId] = useState(NAGLFAR_ITEM_ID);
+  // Preselect an item passed from the rating page (#/?item=<id>); fall back to Naglfar.
+  const [searchParams] = useSearchParams();
+  const [rootItemId, setRootItemId] = useState(() => {
+    const raw = searchParams.get("item");
+    const n = raw ? Number(raw) : NaN;
+    return Number.isFinite(n) && n > 0 ? n : NAGLFAR_ITEM_ID;
+  });
   const [desiredQty, setDesiredQty] = useState(1);
   const [skillLevels, setSkillLevels] = useState<Map<string, number>>(new Map());
   const [materialEfficiency, setMaterialEfficiency] = useState<number | null>(null);

@@ -8,6 +8,8 @@ const es: Resource = {
   },
   lang: {
     label: "Idioma",
+    promptTitle: "Elige tu idioma",
+    promptSubtitle: "Este sitio está disponible en varios idiomas.",
   },
   common: {
     loadErrorTitle: "No se pudieron cargar los datos",
@@ -16,7 +18,7 @@ const es: Resource = {
     all: "Todas",
     none: "Ninguna",
     dash: "—",
-    marketValue: "mercado: {{value}}",
+    marketValue: "valor agregado: {{value}}",
   },
   calc: {
     loading: "Cargando datos del juego…",
@@ -72,7 +74,8 @@ const es: Resource = {
     materials: "Materiales",
     jobsCost: "Coste de trabajos",
     blueprints: "Planos",
-    buyFinished: "Comprar terminado",
+    buyFinished: "Precio de mercado",
+    finishedUnitPrice: "Precio por unidad",
     savings: "Ahorro por fabricar",
     moreExpensive: "Más caro que comprar",
     totalTime: "Tiempo total",
@@ -104,6 +107,7 @@ const es: Resource = {
     reverse: "inversa",
     yours: "propio",
     byMarketValue: "a mercado: {{value}}",
+    openInCalculator: "Abrir en la calculadora",
     loading: "Calculando el ranking…",
     top50: "Top 50 más rentables para fabricar",
     top50Selected: "Top 50 más rentables — categorías seleccionadas ({{enabled}}/{{total}})",

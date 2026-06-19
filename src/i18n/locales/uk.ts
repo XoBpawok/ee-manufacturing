@@ -6,6 +6,8 @@ const uk = {
   },
   lang: {
     label: "Мова",
+    promptTitle: "Виберіть мову",
+    promptSubtitle: "Цей сайт доступний кількома мовами.",
   },
   common: {
     loadErrorTitle: "Не вдалося завантажити дані",
@@ -14,7 +16,7 @@ const uk = {
     all: "Усі",
     none: "Жодної",
     dash: "—",
-    marketValue: "ринок: {{value}}",
+    marketValue: "агреговане значення: {{value}}",
   },
   calc: {
     loading: "Завантаження даних гри…",
@@ -70,7 +72,8 @@ const uk = {
     materials: "Матеріали",
     jobsCost: "Вартість jobs",
     blueprints: "Блюпрінти",
-    buyFinished: "Купити готовий",
+    buyFinished: "Ціна на ринку",
+    finishedUnitPrice: "Ціна за од.",
     savings: "Економія від крафту",
     moreExpensive: "Дорожче за купівлю",
     totalTime: "Загальний час",
@@ -102,6 +105,7 @@ const uk = {
     reverse: "реверс",
     yours: "своя",
     byMarketValue: "за ринком: {{value}}",
+    openInCalculator: "Відкрити в калькуляторі",
     loading: "Обчислення рейтингу…",
     top50: "Топ-50 найприбутковіших для крафту",
     top50Selected:

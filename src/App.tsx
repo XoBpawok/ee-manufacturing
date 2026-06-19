@@ -4,6 +4,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { antdLocaleFor } from "./i18n/languages";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
+import { LanguagePrompt } from "./components/LanguagePrompt";
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
@@ -19,6 +20,7 @@ export default function App() {
 
   return (
     <ConfigProvider locale={antdLocaleFor(i18n.language)} theme={{ algorithm: theme.defaultAlgorithm }}>
+      <LanguagePrompt />
       <Layout style={{ minHeight: "100vh" }}>
         <Header style={{ display: "flex", alignItems: "center", gap: 24 }}>
           <Title level={4} style={{ color: "#fff", margin: 0, whiteSpace: "nowrap" }}>

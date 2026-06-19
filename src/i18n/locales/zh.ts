@@ -8,6 +8,8 @@ const zh: Resource = {
   },
   lang: {
     label: "语言",
+    promptTitle: "选择语言",
+    promptSubtitle: "本站点支持多种语言。",
   },
   common: {
     loadErrorTitle: "数据加载失败",
@@ -16,7 +18,7 @@ const zh: Resource = {
     all: "全部",
     none: "无",
     dash: "—",
-    marketValue: "市场：{{value}}",
+    marketValue: "聚合价格：{{value}}",
   },
   calc: {
     loading: "正在加载游戏数据…",
@@ -71,7 +73,8 @@ const zh: Resource = {
     materials: "材料",
     jobsCost: "作业成本",
     blueprints: "蓝图",
-    buyFinished: "直接购买成品",
+    buyFinished: "市场价格",
+    finishedUnitPrice: "单价",
     savings: "制造节省",
     moreExpensive: "比购买更贵",
     totalTime: "总时间",
@@ -103,6 +106,7 @@ const zh: Resource = {
     reverse: "逆向",
     yours: "自定",
     byMarketValue: "按市场：{{value}}",
+    openInCalculator: "在计算器中打开",
     loading: "正在计算排行…",
     top50: "最赚钱的 50 项制造",
     top50Selected: "最赚钱的 50 项 — 所选类别（{{enabled}}/{{total}}）",

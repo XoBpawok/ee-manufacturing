@@ -8,6 +8,8 @@ const pt: Resource = {
   },
   lang: {
     label: "Idioma",
+    promptTitle: "Escolha o seu idioma",
+    promptSubtitle: "Este site está disponível em vários idiomas.",
   },
   common: {
     loadErrorTitle: "Não foi possível carregar os dados",
@@ -16,7 +18,7 @@ const pt: Resource = {
     all: "Todas",
     none: "Nenhuma",
     dash: "—",
-    marketValue: "mercado: {{value}}",
+    marketValue: "valor agregado: {{value}}",
   },
   calc: {
     loading: "Carregando dados do jogo…",
@@ -72,7 +74,8 @@ const pt: Resource = {
     materials: "Materiais",
     jobsCost: "Custo dos jobs",
     blueprints: "Blueprints",
-    buyFinished: "Comprar pronto",
+    buyFinished: "Preço de mercado",
+    finishedUnitPrice: "Preço por unidade",
     savings: "Economia ao fabricar",
     moreExpensive: "Mais caro que comprar",
     totalTime: "Tempo total",
@@ -104,6 +107,7 @@ const pt: Resource = {
     reverse: "reversa",
     yours: "seu",
     byMarketValue: "a mercado: {{value}}",
+    openInCalculator: "Abrir na calculadora",
     loading: "Calculando o ranking…",
     top50: "Top 50 mais lucrativos para fabricar",
     top50Selected: "Top 50 mais lucrativos — categorias selecionadas ({{enabled}}/{{total}})",

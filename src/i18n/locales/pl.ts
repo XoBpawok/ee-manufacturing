@@ -8,6 +8,8 @@ const pl: Resource = {
   },
   lang: {
     label: "Język",
+    promptTitle: "Wybierz język",
+    promptSubtitle: "Ta strona jest dostępna w kilku językach.",
   },
   common: {
     loadErrorTitle: "Nie udało się załadować danych",
@@ -16,7 +18,7 @@ const pl: Resource = {
     all: "Wszystkie",
     none: "Żadna",
     dash: "—",
-    marketValue: "rynek: {{value}}",
+    marketValue: "wartość zagregowana: {{value}}",
   },
   calc: {
     loading: "Ładowanie danych gry…",
@@ -72,7 +74,8 @@ const pl: Resource = {
     materials: "Materiały",
     jobsCost: "Koszt zadań",
     blueprints: "Schematy",
-    buyFinished: "Kup gotowy",
+    buyFinished: "Cena rynkowa",
+    finishedUnitPrice: "Cena za szt.",
     savings: "Oszczędność z wytwarzania",
     moreExpensive: "Drożej niż kupno",
     totalTime: "Łączny czas",
@@ -104,6 +107,7 @@ const pl: Resource = {
     reverse: "wsteczna",
     yours: "własna",
     byMarketValue: "po rynku: {{value}}",
+    openInCalculator: "Otwórz w kalkulatorze",
     loading: "Obliczanie rankingu…",
     top50: "Top 50 najbardziej opłacalnych do wytworzenia",
     top50Selected: "Top 50 najbardziej opłacalnych — wybrane kategorie ({{enabled}}/{{total}})",

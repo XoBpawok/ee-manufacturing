@@ -308,8 +308,12 @@ export function summarizeTree(root: BuildNode, params: TreeParams): TreeSummary 
 
   const jobs = [...jobMap.values()].sort((a, b) => b.jobCost - a.jobCost);
 
-  const est = params.data.priceByItemId.get(params.rootItemId);
-  const buyFinishedCost = est != null ? est * Math.max(1, params.desiredQty) : null;
+  // Finished-item market price, with a user override taking priority (same as
+  // any material). Drives the "market price" card and the craft-vs-buy savings.
+  const finished = priceFor(params.rootItemId, params.data, params.priceOverrides);
+  const buyFinishedCost = finished.known
+    ? finished.price * Math.max(1, params.desiredQty)
+    : null;
 
   return {
     shoppingList,

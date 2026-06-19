@@ -109,6 +109,7 @@ export function CalculatorPage() {
                 <Space direction="vertical" size="large" style={{ width: "100%" }}>
                   <SummaryPanel
                     summary={calc.summary}
+                    rootItemId={calc.rootItemId}
                     onPriceChange={calc.setPriceOverride}
                     priceOverrides={calc.priceOverrides}
                     priceMeta={calc.priceMeta}

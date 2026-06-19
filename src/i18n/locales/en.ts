@@ -8,6 +8,8 @@ const en: Resource = {
   },
   lang: {
     label: "Language",
+    promptTitle: "Choose your language",
+    promptSubtitle: "This site is available in several languages.",
   },
   common: {
     loadErrorTitle: "Failed to load data",
@@ -16,7 +18,7 @@ const en: Resource = {
     all: "All",
     none: "None",
     dash: "—",
-    marketValue: "market: {{value}}",
+    marketValue: "aggregated value: {{value}}",
   },
   calc: {
     loading: "Loading game data…",
@@ -72,7 +74,8 @@ const en: Resource = {
     materials: "Materials",
     jobsCost: "Jobs cost",
     blueprints: "Blueprints",
-    buyFinished: "Buy finished",
+    buyFinished: "Market price",
+    finishedUnitPrice: "Price per unit",
     savings: "Savings from crafting",
     moreExpensive: "More expensive than buying",
     totalTime: "Total time",
@@ -104,6 +107,7 @@ const en: Resource = {
     reverse: "reverse",
     yours: "yours",
     byMarketValue: "at market: {{value}}",
+    openInCalculator: "Open in calculator",
     loading: "Computing rating…",
     top50: "Top 50 most profitable to craft",
     top50Selected: "Top 50 most profitable — selected categories ({{enabled}}/{{total}})",
