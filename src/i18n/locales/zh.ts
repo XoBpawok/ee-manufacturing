@@ -74,7 +74,6 @@ const zh: Resource = {
     jobsCost: "作业成本",
     blueprints: "蓝图",
     buyFinished: "市场价格",
-    finishedUnitPrice: "单价",
     finishedTotal: "合计：{{value}}",
     savings: "制造节省",
     moreExpensive: "比购买更贵",

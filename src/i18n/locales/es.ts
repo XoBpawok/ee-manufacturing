@@ -75,7 +75,6 @@ const es: Resource = {
     jobsCost: "Coste de trabajos",
     blueprints: "Planos",
     buyFinished: "Precio de mercado",
-    finishedUnitPrice: "Precio por unidad",
     finishedTotal: "total: {{value}}",
     savings: "Ahorro por fabricar",
     moreExpensive: "Más caro que comprar",

@@ -75,7 +75,6 @@ const tr: Resource = {
     jobsCost: "İş maliyeti",
     blueprints: "Blueprint'ler",
     buyFinished: "Piyasa fiyatı",
-    finishedUnitPrice: "Birim fiyat",
     finishedTotal: "toplam: {{value}}",
     savings: "Üretimden tasarruf",
     moreExpensive: "Satın almaktan daha pahalı",

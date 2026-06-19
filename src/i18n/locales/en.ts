@@ -75,7 +75,6 @@ const en: Resource = {
     jobsCost: "Jobs cost",
     blueprints: "Blueprints",
     buyFinished: "Market price",
-    finishedUnitPrice: "Price per unit",
     finishedTotal: "total: {{value}}",
     savings: "Savings from crafting",
     moreExpensive: "More expensive than buying",

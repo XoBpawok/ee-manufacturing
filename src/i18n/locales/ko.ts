@@ -75,7 +75,6 @@ const ko: Resource = {
     jobsCost: "작업 비용",
     blueprints: "블루프린트",
     buyFinished: "시장 가격",
-    finishedUnitPrice: "단가",
     finishedTotal: "합계: {{value}}",
     savings: "제작으로 인한 절약",
     moreExpensive: "구매보다 비쌈",
