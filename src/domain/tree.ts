@@ -1,6 +1,6 @@
 import type { GameData, Recipe, RecipeKind } from "../api/types";
 import { iconUrl } from "../api/types";
-import { effectiveTime, materialFactor, type SkillLevels } from "./skills";
+import { effectiveTime, materialFactor, sortSkillsByTier, type SkillLevels } from "./skills";
 
 /** Material type for capital components (value from echoes.mobi blueprints). */
 export const CAPITAL_COMPONENT_TYPE = "Capital Construction Components";
@@ -327,7 +327,7 @@ export function summarizeTree(root: BuildNode, params: TreeParams): TreeSummary 
     grandTotal: totalBuyCost + totalJobCost + totalBlueprintCost,
     totalTime,
     buyFinishedCost,
-    relevantSkills: [...skills].sort(),
+    relevantSkills: sortSkillsByTier([...skills]),
   };
 }
 

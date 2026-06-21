@@ -65,6 +65,34 @@ export function skillPrerequisite(name: string): { name: string; minLevel: numbe
   return null;
 }
 
+/** Base skill name without an "Advanced "/"Expert " tier prefix. */
+export function baseSkillName(name: string): string {
+  if (name.startsWith("Expert ")) return name.slice("Expert ".length);
+  if (name.startsWith("Advanced ")) return name.slice("Advanced ".length);
+  return name;
+}
+
+/** Tier rank within a skill family: base (0) < Advanced (1) < Expert (2). */
+function tierRank(name: string): number {
+  if (name.startsWith("Expert ")) return 2;
+  if (name.startsWith("Advanced ")) return 1;
+  return 0;
+}
+
+/**
+ * Sorts skill names so that the base, Advanced and Expert tiers of the same
+ * skill family stay together, in that order (e.g. "Dreadnought Manufacture",
+ * "Advanced Dreadnought Manufacture", "Expert Dreadnought Manufacture"),
+ * with families themselves ordered alphabetically.
+ */
+export function sortSkillsByTier(names: string[]): string[] {
+  return [...names].sort((a, b) => {
+    const baseCompare = baseSkillName(a).localeCompare(baseSkillName(b));
+    if (baseCompare !== 0) return baseCompare;
+    return tierRank(a) - tierRank(b);
+  });
+}
+
 /**
  * Effective level of a skill: 0 if its prerequisite tier isn't met (the skill
  * couldn't actually be trained), otherwise the stored/defaulted level.
